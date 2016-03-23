@@ -16,7 +16,13 @@ namespace PS8
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+
+            //Initialize the ViewManager
+            var context = ViewManager.GetContext();
+            //Run a single instance of ViewForm
+            ViewManager.GetContext().RunNew();
+            //Run the program
+            Application.Run(context);
         }
     }
 }

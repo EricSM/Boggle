@@ -26,7 +26,7 @@ namespace PS8
             return client;
         }
 
-        public async void CreateUser(string NickName)
+        public  void CreateUser(string NickName)
         {
             using (HttpClient client = CreateClient())
             {
@@ -52,7 +52,7 @@ namespace PS8
             }
         }
 
-        public async void JoinGame (string UserToken, int TimeLimit)
+        public  void JoinGame (string UserToken, int TimeLimit)
         {
             using (HttpClient client = CreateClient())
             {
@@ -80,16 +80,28 @@ namespace PS8
             }
 
         }
-        public async void CancelJoinRequest(string UserToken)
+        public  void CancelJoinRequest(string UserToken)
         {
             using (HttpClient client = CreateClient())
             {
 
                 dynamic data = new ExpandoObject();
                 data.UserToken = UserToken;
+
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                HttpResponseMessage response = client.PostAsync("cancel", content).Result;
 
-
+                if (response.IsSuccessStatusCode)
+                {
+                    String result = response.Content.ReadAsStringAsync().Result;
+                    dynamic JSONoutput = JsonConvert.DeserializeObject(result);
+                    Console.WriteLine(JSONoutput);
+                }
+                else
+                {
+                    Console.WriteLine("API Error: " + response.StatusCode);
+                    Console.WriteLine(response.ReasonPhrase);
+                }
 
 
             }

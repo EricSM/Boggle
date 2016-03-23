@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 
 namespace BoggleClient
 {
-    class Model
+    public class Model
     {
         public string CurrentUID = "";
 
-        public static HttpClient CreateClient()
+        public static HttpClient CreateClient(string serverName)
         {
 
             HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri("http://bogglecs3500s16.azurewebsites.net/BoggleService.svc/");
+            client.BaseAddress = new Uri(serverName);
 
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -25,9 +25,9 @@ namespace BoggleClient
             return client;
         }
 
-        public async void CreateUser(string NickName)
+        public  void CreateUser(string NickName, string serverName)
         {
-            using (HttpClient client = CreateClient())
+            using (HttpClient client = CreateClient(serverName))
             {
 
                 dynamic data = new ExpandoObject();
@@ -51,9 +51,9 @@ namespace BoggleClient
             }
         }
 
-        public async void JoinGame(string UserToken, int TimeLimit)
+        public  void JoinGame(string UserToken, int TimeLimit, string serverName)
         {
-            using (HttpClient client = CreateClient())
+            using (HttpClient client = CreateClient(serverName))
             {
                 dynamic data = new ExpandoObject();
                 data.UserToken = UserToken;
@@ -79,9 +79,9 @@ namespace BoggleClient
             }
 
         }
-        public async void CancelJoinRequest(string UserToken)
+        public  void CancelJoinRequest(string UserToken, string serverName)
         {
-            using (HttpClient client = CreateClient())
+            using (HttpClient client = CreateClient(serverName))
             {
 
                 dynamic data = new ExpandoObject();

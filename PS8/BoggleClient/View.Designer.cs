@@ -174,6 +174,7 @@
             this.textBoxTime.Name = "textBoxTime";
             this.textBoxTime.Size = new System.Drawing.Size(100, 20);
             this.textBoxTime.TabIndex = 6;
+            this.textBoxTime.Text = "0";
             // 
             // label7
             // 
@@ -235,6 +236,7 @@
             this.buttonSubmit.TabIndex = 7;
             this.buttonSubmit.Text = "Submit";
             this.buttonSubmit.UseVisualStyleBackColor = true;
+            this.buttonSubmit.Click += new System.EventHandler(this.buttonSubmit_Click);
             // 
             // Dice1
             // 
@@ -244,6 +246,7 @@
             this.Dice1.Size = new System.Drawing.Size(35, 13);
             this.Dice1.TabIndex = 2;
             this.Dice1.Text = "label1";
+            this.Dice1.Click += new System.EventHandler(this.Dice1_Click);
             // 
             // Dice2
             // 

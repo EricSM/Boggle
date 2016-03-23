@@ -47,5 +47,15 @@ namespace BoggleClient
         {
 
         }
+
+        private void buttonSubmit_Click(object sender, EventArgs e)
+        {
+            model.PlayWordRequest(textBox1.Text,  textBoxServer.Text);
+        }
+
+        private void Dice1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

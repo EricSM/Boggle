@@ -25,7 +25,7 @@ namespace BoggleClient
             return client;
         }
 
-        public  void CreateUser(string NickName, string serverName)
+        public void CreateUser(string NickName, string serverName)
         {
             using (HttpClient client = CreateClient(serverName))
             {
@@ -60,7 +60,7 @@ namespace BoggleClient
                 data.TimeLimit = TimeLimit;
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
-                HttpResponseMessage response = client.PostAsync("games", content).Result;
+                HttpResponseMessage response = client.PostAsync("JoinGame", content).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -120,7 +120,7 @@ namespace BoggleClient
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
-                HttpResponseMessage response = client.PostAsync("", content).Result;
+                HttpResponseMessage response = client.PostAsync("PlayWordRequest", content).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -136,6 +136,37 @@ namespace BoggleClient
                 }
 
             }
+        }
+        public void GameStatus(bool breif, string serverName)
+        {
+
+            using (HttpClient client = CreateClient(serverName))
+            {
+                dynamic data = new ExpandoObject();
+                data.UserToken = CurrentUID;
+                if (breif)
+                {
+                    data.Brief = "yes";
+                }
+
+                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+
+
+
+                HttpResponseMessage response = client.PostAsync("", content).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    String result = response.Content.ReadAsStringAsync().Result;
+                    dynamic JSONoutput = JsonConvert.DeserializeObject(result);
+                    Console.WriteLine(JSONoutput);
+                }
+
+
+            }
+
+
+
         }
     }
 }

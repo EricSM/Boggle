@@ -42,5 +42,10 @@ namespace BoggleClient
             model.CancelJoinRequest(textBoxServer.Text);
 
         }
+
+        private void label11_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

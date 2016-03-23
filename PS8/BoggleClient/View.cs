@@ -20,9 +20,27 @@ namespace BoggleClient
             model = new Model();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonJoinGame_Click(object sender, EventArgs e)
+        {            
+            Task task = new Task(() => 
+            {
+                model.CreateUser(textBoxPlayerName.Text, textBoxServer.Text);
+                model.JoinGame(int.Parse(textBoxTime.Text), textBoxServer.Text);
+            });
+
+            task.Start();
+
+            buttonJoinGame.Enabled = false;
+            buttonCancel.Enabled = true;
+            textBoxServer.ReadOnly = textBoxPlayerName.ReadOnly = textBoxTime.ReadOnly = true;
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
         {
-            model.JoinGame(textBoxPlayerName.Text, int.Parse(textBoxTime.Text), textBoxServer.Text);
+            buttonCancel.Enabled = false;
+
+            model.CancelJoinRequest(textBoxServer.Text);
+
         }
     }
 }

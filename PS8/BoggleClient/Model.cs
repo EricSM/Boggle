@@ -51,12 +51,12 @@ namespace BoggleClient
             }
         }
 
-        public  void JoinGame(string UserToken, int TimeLimit, string serverName)
+        public void JoinGame(int TimeLimit, string serverName)
         {
             using (HttpClient client = CreateClient(serverName))
             {
                 dynamic data = new ExpandoObject();
-                data.UserToken = UserToken;
+                data.UserToken = CurrentUID;
                 data.TimeLimit = TimeLimit;
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
@@ -79,20 +79,63 @@ namespace BoggleClient
             }
 
         }
-        public  void CancelJoinRequest(string UserToken, string serverName)
+
+
+        public void CancelJoinRequest(string serverName)
         {
             using (HttpClient client = CreateClient(serverName))
             {
 
                 dynamic data = new ExpandoObject();
-                data.UserToken = UserToken;
+                data.UserToken = CurrentUID;
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
+                HttpResponseMessage response = client.PostAsync("games", content).Result;
 
+                if (response.IsSuccessStatusCode)
+                {
+                    String result = response.Content.ReadAsStringAsync().Result;
+                    dynamic JSONoutput = JsonConvert.DeserializeObject(result);
+                    Console.WriteLine(JSONoutput);
+                }
+
+                else
+                {
+                    Console.WriteLine("API Error: " + response.StatusCode);
+                    Console.WriteLine(response.ReasonPhrase);
+                }
 
             }
 
+        }
+
+        public void PlayWordRequest(string word, string serverName)
+        {
+            using (HttpClient client = CreateClient(serverName))
+            {
+
+                dynamic data = new ExpandoObject();
+                data.UserToken = CurrentUID;
+                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+
+
+                HttpResponseMessage response = client.PostAsync("", content).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    String result = response.Content.ReadAsStringAsync().Result;
+                    dynamic JSONoutput = JsonConvert.DeserializeObject(result);
+                    Console.WriteLine(JSONoutput);
+                }
+
+                else
+                {
+                    Console.WriteLine("API Error: " + response.StatusCode);
+                    Console.WriteLine(response.ReasonPhrase);
+                }
+
+            }
         }
     }
 }

@@ -37,19 +37,21 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
-            this.label5 = new System.Windows.Forms.Label();
-            this.textBoxServer = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.textBoxPlayerName = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
+            this.buttonCancel = new System.Windows.Forms.Button();
             this.textBoxTime = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.textBoxPlayerName = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.textBoxServer = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.buttonJoinGame = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
             // 
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel1.Controls.Add(this.label4);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.textBox3);
@@ -122,61 +124,38 @@
             // 
             // panel2
             // 
+            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.buttonCancel);
             this.panel2.Controls.Add(this.textBoxTime);
             this.panel2.Controls.Add(this.label7);
             this.panel2.Controls.Add(this.textBoxPlayerName);
             this.panel2.Controls.Add(this.label6);
             this.panel2.Controls.Add(this.textBoxServer);
             this.panel2.Controls.Add(this.label5);
-            this.panel2.Controls.Add(this.button1);
+            this.panel2.Controls.Add(this.buttonJoinGame);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel2.Location = new System.Drawing.Point(0, 57);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(187, 405);
             this.panel2.TabIndex = 1;
             // 
-            // button1
+            // buttonCancel
             // 
-            this.button1.Location = new System.Drawing.Point(55, 258);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.buttonCancel.Enabled = false;
+            this.buttonCancel.Location = new System.Drawing.Point(97, 267);
+            this.buttonCancel.Name = "buttonCancel";
+            this.buttonCancel.Size = new System.Drawing.Size(75, 23);
+            this.buttonCancel.TabIndex = 7;
+            this.buttonCancel.Text = "Cancel";
+            this.buttonCancel.UseVisualStyleBackColor = true;
+            this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
-            // label5
+            // textBoxTime
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(16, 29);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(38, 13);
-            this.label5.TabIndex = 1;
-            this.label5.Text = "Server";
-            // 
-            // textBoxServer
-            // 
-            this.textBoxServer.Location = new System.Drawing.Point(57, 26);
-            this.textBoxServer.Name = "textBoxServer";
-            this.textBoxServer.Size = new System.Drawing.Size(100, 20);
-            this.textBoxServer.TabIndex = 2;
-            this.textBoxServer.Text = "http://bogglecs3500s16.azurewebsites.net/BoggleService.svc/";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(16, 95);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(35, 13);
-            this.label6.TabIndex = 3;
-            this.label6.Text = "Name";
-            // 
-            // textBoxPlayerName
-            // 
-            this.textBoxPlayerName.Location = new System.Drawing.Point(57, 88);
-            this.textBoxPlayerName.Name = "textBoxPlayerName";
-            this.textBoxPlayerName.Size = new System.Drawing.Size(100, 20);
-            this.textBoxPlayerName.TabIndex = 4;
+            this.textBoxTime.Location = new System.Drawing.Point(55, 150);
+            this.textBoxTime.Name = "textBoxTime";
+            this.textBoxTime.Size = new System.Drawing.Size(100, 20);
+            this.textBoxTime.TabIndex = 6;
             // 
             // label7
             // 
@@ -187,12 +166,48 @@
             this.label7.TabIndex = 5;
             this.label7.Text = "Time";
             // 
-            // textBoxTime
+            // textBoxPlayerName
             // 
-            this.textBoxTime.Location = new System.Drawing.Point(55, 150);
-            this.textBoxTime.Name = "textBoxTime";
-            this.textBoxTime.Size = new System.Drawing.Size(100, 20);
-            this.textBoxTime.TabIndex = 6;
+            this.textBoxPlayerName.Location = new System.Drawing.Point(57, 88);
+            this.textBoxPlayerName.Name = "textBoxPlayerName";
+            this.textBoxPlayerName.Size = new System.Drawing.Size(100, 20);
+            this.textBoxPlayerName.TabIndex = 4;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(16, 95);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(35, 13);
+            this.label6.TabIndex = 3;
+            this.label6.Text = "Name";
+            // 
+            // textBoxServer
+            // 
+            this.textBoxServer.Location = new System.Drawing.Point(57, 26);
+            this.textBoxServer.Name = "textBoxServer";
+            this.textBoxServer.Size = new System.Drawing.Size(100, 20);
+            this.textBoxServer.TabIndex = 2;
+            this.textBoxServer.Text = "http://bogglecs3500s16.azurewebsites.net/BoggleService.svc/";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(16, 29);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(38, 13);
+            this.label5.TabIndex = 1;
+            this.label5.Text = "Server";
+            // 
+            // buttonJoinGame
+            // 
+            this.buttonJoinGame.Location = new System.Drawing.Point(28, 268);
+            this.buttonJoinGame.Name = "buttonJoinGame";
+            this.buttonJoinGame.Size = new System.Drawing.Size(62, 23);
+            this.buttonJoinGame.TabIndex = 0;
+            this.buttonJoinGame.Text = "Join";
+            this.buttonJoinGame.UseVisualStyleBackColor = true;
+            this.buttonJoinGame.Click += new System.EventHandler(this.buttonJoinGame_Click);
             // 
             // View
             // 
@@ -228,7 +243,8 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox textBoxServer;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonJoinGame;
+        private System.Windows.Forms.Button buttonCancel;
     }
 }
 

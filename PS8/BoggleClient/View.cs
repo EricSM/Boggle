@@ -13,13 +13,14 @@ namespace BoggleClient
     public partial class View : Form
     {
         public Model model;
-
+       
         public View()
         {
             InitializeComponent();
             model = new Model();
+          
         }
-
+       
         private void buttonJoinGame_Click(object sender, EventArgs e)
         {            
             Task task = new Task(() => 
@@ -57,5 +58,6 @@ namespace BoggleClient
         {
 
         }
+        
     }
 }

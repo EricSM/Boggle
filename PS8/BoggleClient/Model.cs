@@ -11,6 +11,9 @@ namespace BoggleClient
 {
     public class Model
     {
+        //The 16 char on the boggle game as a string 
+        //private string board;
+        
         public string CurrentUID = "";
 
         public static HttpClient CreateClient(string serverName)

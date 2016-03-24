@@ -13,7 +13,9 @@ namespace BoggleClient
     {
         public string CurrentUID = "";
         public string GameID = "";
-
+        public string TimeLeft = "";
+        public int GameEnded = 0;
+        public string Board = "";
         public static HttpClient CreateClient(string serverName)
         {
 
@@ -59,7 +61,8 @@ namespace BoggleClient
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
                 data.TimeLimit = TimeLimit;
-                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                Console.WriteLine(TimeLimit);
+               StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
                 HttpResponseMessage response = client.PostAsync("games", content).Result;
 
@@ -99,7 +102,8 @@ namespace BoggleClient
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
-                    Console.WriteLine(JSONoutput);
+                    GameEnded = 1;
+                    //Console.WriteLine(JSONoutput);
                 }
 
                 else
@@ -158,12 +162,27 @@ namespace BoggleClient
 
 
 
-                HttpResponseMessage response = client.GetAsync("games"+breifpar).Result;
+                HttpResponseMessage response = client.GetAsync("games/"+GameID+breifpar).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
+                    TimeLeft = JSONoutput.TimeLeft;
+                    Board = JSONoutput.Board;
+                    //try {
+                    //    if (JSONoutput.Board)
+                    //    {
+                    //        for (int i = 0; i < 15; i++)
+                    //        {
+                    //            Console.WriteLine(JSONoutput.Board[i]);
+                    //        }
+                    //    }
+                    //}
+                    //catch
+                    //{
+
+                    //}
                     Console.WriteLine(JSONoutput);
                 }
 

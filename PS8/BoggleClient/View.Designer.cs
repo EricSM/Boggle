@@ -28,7 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.buttonSubmit = new System.Windows.Forms.Button();
             this.labelTime = new System.Windows.Forms.Label();
             this.labelPlayer2 = new System.Windows.Forms.Label();
             this.textBox3 = new System.Windows.Forms.TextBox();
@@ -45,7 +47,6 @@
             this.textBoxServer = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.buttonJoinGame = new System.Windows.Forms.Button();
-            this.buttonSubmit = new System.Windows.Forms.Button();
             this.Dice1 = new System.Windows.Forms.Label();
             this.Dice2 = new System.Windows.Forms.Label();
             this.Dice3 = new System.Windows.Forms.Label();
@@ -62,6 +63,7 @@
             this.Dice14 = new System.Windows.Forms.Label();
             this.Dice15 = new System.Windows.Forms.Label();
             this.Dice16 = new System.Windows.Forms.Label();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -82,6 +84,17 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(684, 57);
             this.panel1.TabIndex = 0;
+            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            // 
+            // buttonSubmit
+            // 
+            this.buttonSubmit.Location = new System.Drawing.Point(160, 18);
+            this.buttonSubmit.Name = "buttonSubmit";
+            this.buttonSubmit.Size = new System.Drawing.Size(75, 23);
+            this.buttonSubmit.TabIndex = 7;
+            this.buttonSubmit.Text = "Submit";
+            this.buttonSubmit.UseVisualStyleBackColor = true;
+            this.buttonSubmit.Click += new System.EventHandler(this.buttonSubmit_Click);
             // 
             // labelTime
             // 
@@ -227,16 +240,6 @@
             this.buttonJoinGame.Text = "Join";
             this.buttonJoinGame.UseVisualStyleBackColor = true;
             this.buttonJoinGame.Click += new System.EventHandler(this.buttonJoinGame_Click);
-            // 
-            // buttonSubmit
-            // 
-            this.buttonSubmit.Location = new System.Drawing.Point(160, 18);
-            this.buttonSubmit.Name = "buttonSubmit";
-            this.buttonSubmit.Size = new System.Drawing.Size(75, 23);
-            this.buttonSubmit.TabIndex = 7;
-            this.buttonSubmit.Text = "Submit";
-            this.buttonSubmit.UseVisualStyleBackColor = true;
-            this.buttonSubmit.Click += new System.EventHandler(this.buttonSubmit_Click);
             // 
             // Dice1
             // 
@@ -384,6 +387,11 @@
             this.Dice16.TabIndex = 17;
             this.Dice16.Text = "label19";
             // 
+            // timer1
+            // 
+            this.timer1.Interval = 1000;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
             // View
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -454,6 +462,7 @@
         private System.Windows.Forms.Label Dice14;
         private System.Windows.Forms.Label Dice15;
         private System.Windows.Forms.Label Dice16;
+        private System.Windows.Forms.Timer timer1;
     }
 }
 

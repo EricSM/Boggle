@@ -60,7 +60,7 @@ namespace BoggleClient
                 data.TimeLimit = TimeLimit;
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
-                HttpResponseMessage response = client.PostAsync("JoinGame", content).Result;
+                HttpResponseMessage response = client.PostAsync("games", content).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -91,7 +91,7 @@ namespace BoggleClient
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
-                HttpResponseMessage response = client.PostAsync("games", content).Result;
+                HttpResponseMessage response = client.PutAsync("games", content).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -120,7 +120,7 @@ namespace BoggleClient
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
-                HttpResponseMessage response = client.PostAsync("PlayWordRequest", content).Result;
+                HttpResponseMessage response = client.PutAsync("games/:GameID", content).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -149,11 +149,11 @@ namespace BoggleClient
                     data.Brief = "yes";
                 }
 
-                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                //StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
 
-                HttpResponseMessage response = client.PostAsync("", content).Result;
+                HttpResponseMessage response = client.GetAsync("games/:GameID").Result;
 
                 if (response.IsSuccessStatusCode)
                 {

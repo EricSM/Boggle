@@ -62,7 +62,7 @@ namespace BoggleClient
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
                 HttpResponseMessage response = client.PostAsync("games", content).Result;
-                
+
                 if (response.IsSuccessStatusCode)
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
@@ -154,7 +154,7 @@ namespace BoggleClient
                     breifpar = "?Brief=yes";
                 }
 
-                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                //StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
 

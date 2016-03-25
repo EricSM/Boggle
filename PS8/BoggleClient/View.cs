@@ -53,7 +53,6 @@ namespace BoggleClient
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             //check if the game is not pending you cant cancel
-            buttonCancel.Enabled = false;
 
             model.CancelJoinRequest(textBoxServer.Text);
 
@@ -62,6 +61,12 @@ namespace BoggleClient
             {
                 this.Close();
             }
+
+
+            buttonCancel.Enabled = false;
+            buttonJoinGame.Enabled = true;
+            buttonSubmit.Enabled = false;
+            textBoxServer.ReadOnly = textBoxPlayerName.ReadOnly = textBoxTime.ReadOnly = false;
         }
         //create button for submit 
         private void buttonSubmit_Click(object sender, EventArgs e)

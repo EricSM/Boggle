@@ -14,8 +14,13 @@ namespace BoggleClient
         public string CurrentUID = "";
         public string GameID = "";
         public string TimeLeft = "";
-        public int GameEnded = 0;
+        public string GameState;
         public string Board = "";
+        public string Player1;
+        public string Player2;
+        public int Player1Score;
+        public int Player2Score;
+
         public static HttpClient CreateClient(string serverName)
         {
 
@@ -62,7 +67,7 @@ namespace BoggleClient
                 data.UserToken = CurrentUID;
                 data.TimeLimit = TimeLimit;
                 Console.WriteLine(TimeLimit);
-               StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
                 HttpResponseMessage response = client.PostAsync("games", content).Result;
 
@@ -78,11 +83,7 @@ namespace BoggleClient
                     Console.WriteLine("API Error: " + response.StatusCode);
                     Console.WriteLine(response.ReasonPhrase);
                 }
-
-
-
             }
-
         }
 
 
@@ -102,7 +103,7 @@ namespace BoggleClient
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
-                    GameEnded = 1;
+                    GameState = "";
                     //Console.WriteLine(JSONoutput);
                 }
 
@@ -111,9 +112,7 @@ namespace BoggleClient
                     Console.WriteLine("API Error: " + response.StatusCode);
                     Console.WriteLine(response.ReasonPhrase);
                 }
-
             }
-
         }
 
         public void PlayWordRequest(string word, string serverName)
@@ -144,53 +143,34 @@ namespace BoggleClient
 
             }
         }
-        public void GameStatus(bool breif, string serverName)
+
+        public void GameStatus(bool brief, string serverName)
         {
 
             using (HttpClient client = CreateClient(serverName))
             {
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
-                var breifpar = "";
-
-                if (breif)
-                {
-                    breifpar = "?Brief=yes";
-                }
-
-                //StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
-
-                HttpResponseMessage response = client.GetAsync("games/"+GameID+breifpar).Result;
+                HttpResponseMessage response = client.GetAsync("games/" + GameID + (brief ? "?Brief=yes" : "")).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
+                    GameState = JSONoutput.GameState;
                     TimeLeft = JSONoutput.TimeLeft;
                     Board = JSONoutput.Board;
-                    //try {
-                    //    if (JSONoutput.Board)
-                    //    {
-                    //        for (int i = 0; i < 15; i++)
-                    //        {
-                    //            Console.WriteLine(JSONoutput.Board[i]);
-                    //        }
-                    //    }
-                    //}
-                    //catch
-                    //{
+                    Player1 = JSONoutput.Player1.Nickname;
+                    Player2 = JSONoutput.Player2.Nickname;
+                    Player1Score = JSONoutput.Player1.Score;
+                    Player2Score = JSONoutput.Player2.Score;
+                    
 
-                    //}
                     Console.WriteLine(JSONoutput);
                 }
-
-
             }
-
-
-
         }
     }
 }

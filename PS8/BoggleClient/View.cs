@@ -38,6 +38,7 @@ namespace BoggleClient
 
             task.Start();
             timer1.Enabled = true;
+
             buttonJoinGame.Enabled = false;
             buttonCancel.Enabled = true;
             textBoxServer.ReadOnly = textBoxPlayerName.ReadOnly = textBoxTime.ReadOnly = true;
@@ -51,28 +52,18 @@ namespace BoggleClient
             model.CancelJoinRequest(textBoxServer.Text);
 
            // timer1.Enabled = false;
-            if (model.GameEnded == 1)
+            if (model.GameState == "")
             {
                 this.Close();
             }
 
         }
 
-        private void label11_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void buttonSubmit_Click(object sender, EventArgs e)
         {
-            model.PlayWordRequest(textBox1.Text,  textBoxServer.Text);
+            model.PlayWordRequest(textBoxWord.Text,  textBoxServer.Text);
 
             timer1.Enabled = true;
-        }
-
-        private void Dice1_Click(object sender, EventArgs e)
-        {
-
         }
 
         public static string GetRandomString()
@@ -85,27 +76,26 @@ namespace BoggleClient
         {
             this.Close();
         }
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-            
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            
-        }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
             model.GameStatus(false, textBoxServer.Text);
+
+            labelStatus.Text = model.GameState;
             labelTime.Text = model.TimeLeft;
+
             if (model.TimeLeft == "0")
             {
+                model.GameStatus(false, textBoxServer.Text);
                 Console.WriteLine("Times up");
+                timer1.Enabled = false;
+                MessageBox.Show("");
             }
             try
             {
+                textBoxPlayer1Score.Text = model.Player1Score.ToString();
+                textBoxPlayer2Score.Text = model.Player2Score.ToString();
+
                 if (model.Board.Length > 0)
                 {
                     Dice1.Text = model.Board[0].ToString();
@@ -131,11 +121,6 @@ namespace BoggleClient
             {
 
             }
-        }
-
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            model.GameStatus(false, textBoxServer.Text);
         }
     }
 }

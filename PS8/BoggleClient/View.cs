@@ -191,15 +191,12 @@ namespace BoggleClient
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void tutorialToolStripMenuItem_Click(object sender, EventArgs e)
         {
-           
-
-        }
-
-        private void panel2_Paint(object sender, PaintEventArgs e)
-        {
-
+            MessageBox.Show("To start a new game, enter the boggle server, your gamer-tag, and desired time\n" +
+                            "into the respective textboxes on the left, and press Join Game.  To exit a game\n" + 
+                            "or cancel a pending game, press Cancel.  To submit a word, enter it into the box\n" +
+                            "marked \"Word\".  When your game is over, to play a new game, press \"New Game\"");
         }
     }
 }

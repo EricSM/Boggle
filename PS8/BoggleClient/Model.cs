@@ -15,7 +15,10 @@ namespace BoggleClient
         //private string board;
         
         public string CurrentUID = "";
-
+        public string GameID = "";
+        public string TimeLeft = "";
+        public int GameEnded = 0;
+        public string Board = "";
         public static HttpClient CreateClient(string serverName)
         {
 
@@ -34,7 +37,7 @@ namespace BoggleClient
             {
 
                 dynamic data = new ExpandoObject();
-                data.Nickname = "Hassan";
+                data.Nickname = NickName;
 
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
                 HttpResponseMessage response = client.PostAsync("users", content).Result;
@@ -43,7 +46,7 @@ namespace BoggleClient
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
-                    //Console.WriteLine(JSONoutput);
+                    Console.WriteLine(JSONoutput);
                     CurrentUID = JSONoutput.UserToken;
                 }
                 else
@@ -61,14 +64,16 @@ namespace BoggleClient
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
                 data.TimeLimit = TimeLimit;
-                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                Console.WriteLine(TimeLimit);
+               StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
-                HttpResponseMessage response = client.PostAsync("JoinGame", content).Result;
+                HttpResponseMessage response = client.PostAsync("games", content).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
+                    GameID = JSONoutput.GameID;
                     Console.WriteLine(JSONoutput);
                 }
                 else
@@ -94,13 +99,14 @@ namespace BoggleClient
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
-                HttpResponseMessage response = client.PostAsync("games", content).Result;
-
+                HttpResponseMessage response = client.PutAsync("games", content).Result;
+                Console.WriteLine(CurrentUID);
                 if (response.IsSuccessStatusCode)
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
-                    Console.WriteLine(JSONoutput);
+                    GameEnded = 1;
+                    //Console.WriteLine(JSONoutput);
                 }
 
                 else
@@ -120,10 +126,11 @@ namespace BoggleClient
 
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
+                data.Word = word;
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
-                HttpResponseMessage response = client.PostAsync("PlayWordRequest", content).Result;
+                HttpResponseMessage response = client.PutAsync("games/"+GameID, content).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -147,21 +154,38 @@ namespace BoggleClient
             {
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
+                var breifpar = "";
+
                 if (breif)
                 {
-                    data.Brief = "yes";
+                    breifpar = "?Brief=yes";
                 }
 
-                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                //StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
 
-                HttpResponseMessage response = client.PostAsync("", content).Result;
+                HttpResponseMessage response = client.GetAsync("games/"+GameID+breifpar).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
+                    TimeLeft = JSONoutput.TimeLeft;
+                    Board = JSONoutput.Board;
+                    //try {
+                    //    if (JSONoutput.Board)
+                    //    {
+                    //        for (int i = 0; i < 15; i++)
+                    //        {
+                    //            Console.WriteLine(JSONoutput.Board[i]);
+                    //        }
+                    //    }
+                    //}
+                    //catch
+                    //{
+
+                    //}
                     Console.WriteLine(JSONoutput);
                 }
 

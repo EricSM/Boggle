@@ -1,4 +1,7 @@
-﻿using System;
+﻿//Meysam Hamel & Eric Miramontes
+//PS8
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -21,10 +24,10 @@ namespace BoggleClient
             model = new Model();
 
             //random info
-            textBoxPlayerName.Text = GetRandomString();
-            Random r = new Random();
-            int rInt = r.Next(10, 100); //for ints
-            textBoxTime.Text = "15";//rInt.ToString();
+            //textBoxPlayerName.Text = GetRandomString();
+            //Random r = new Random();
+            //int rInt = r.Next(10, 100); //for ints
+            //textBoxTime.Text = "15";//rInt.ToString();
         }
 
         private void buttonJoinGame_Click(object sender, EventArgs e)
@@ -38,8 +41,10 @@ namespace BoggleClient
 
             task.Start();
             timer1.Enabled = true;
+
             buttonJoinGame.Enabled = false;
             buttonCancel.Enabled = true;
+            buttonSubmit.Enabled = true;
             textBoxServer.ReadOnly = textBoxPlayerName.ReadOnly = textBoxTime.ReadOnly = true;
         }
 
@@ -51,63 +56,102 @@ namespace BoggleClient
             model.CancelJoinRequest(textBoxServer.Text);
 
            // timer1.Enabled = false;
-            if (model.GameEnded == 1)
+            if (model.GameState == "")
             {
                 this.Close();
+            }
         }
-
-        }
-
-        private void label11_Click(object sender, EventArgs e)
-        {
-
-        }
-
+        //create button for submit 
         private void buttonSubmit_Click(object sender, EventArgs e)
         {
-            model.PlayWordRequest(textBox1.Text,  textBoxServer.Text);
-
+            model.PlayWordRequest(textBoxWord.Text,  textBoxServer.Text);
+            textBoxWord.Text = "";
+            textBoxWord.Focus();
             timer1.Enabled = true;
         }
-
-        private void Dice1_Click(object sender, EventArgs e)
-        {
-
-        }
-
+        // Remove period
         public static string GetRandomString()
         {
             string path = Path.GetRandomFileName();
-            path = path.Replace(".", ""); // Remove period.
+            path = path.Replace(".", ""); 
             return path;
         }
+        //
         private void endgame()
         {
             this.Close();
         }
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-            
 
-        }
+        private static readonly Random rand = new Random();
 
-        private void button1_Click(object sender, EventArgs e)
+        private Color GetRandomColour()
         {
-            
+            return Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256));
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
             model.GameStatus(false, textBoxServer.Text);
-            labelTime.Text = model.TimeLeft;
-            if (model.TimeLeft == "0")
-            {
+            
+            labelStatus.Text = model.GameState;
+            labelTime.Text = model.TimeLeft.ToString();
+            labelPlayer1.Text = model.Player1;
+            labelPlayer2.Text = model.Player2;
+
+            if (model.TimeLeft == 0)
+        {
+            model.GameStatus(false, textBoxServer.Text);
                 Console.WriteLine("Times up");
+                timer1.Enabled = false;
+
+                panel3.Visible = true;
+
+                dataGridView1.ColumnCount = 2;
+                dataGridView1.Columns[0].Name = "Word Played";
+                dataGridView1.Columns[1].Name = "Score";
+
+                foreach (var playedword in model.Player1WordsPlayed)
+                {
+
+                    string[] row = new string[] { playedword.Word, playedword.Score };
+                    dataGridView1.Rows.Add(row);
+
+                    Console.WriteLine(playedword.Word);
+                    
+                }
+
+                foreach (var playedword in model.Player1WordsPlayed)
+                {
+                    string[] row = new string[] { playedword.Word, playedword.Score };
+                    dataGridView1.Rows.Add(row);
+                    Console.WriteLine(playedword.Word);
+                }
+
             }
             try
             {
+                textBoxPlayer1Score.Text = model.Player1Score.ToString();
+                textBoxPlayer2Score.Text = model.Player2Score.ToString();
+
                 if (model.Board.Length > 0)
                 {
+                    Dice1.ForeColor = GetRandomColour();
+                    Dice2.ForeColor = GetRandomColour();
+                    Dice3.ForeColor = GetRandomColour();
+                    Dice4.ForeColor = GetRandomColour();
+                    Dice5.ForeColor = GetRandomColour();
+                    Dice6.ForeColor = GetRandomColour();
+                    Dice7.ForeColor = GetRandomColour();
+                    Dice8.ForeColor = GetRandomColour();
+                    Dice9.ForeColor = GetRandomColour();
+                    Dice10.ForeColor = GetRandomColour();
+                    Dice11.ForeColor = GetRandomColour();
+                    Dice12.ForeColor = GetRandomColour();
+                    Dice13.ForeColor = GetRandomColour();
+                    Dice14.ForeColor = GetRandomColour();
+                    Dice15.ForeColor = GetRandomColour();
+                    Dice16.ForeColor = GetRandomColour();
+
                     Dice1.Text = model.Board[0].ToString();
                     Dice2.Text = model.Board[1].ToString();
                     Dice3.Text = model.Board[2].ToString();
@@ -133,10 +177,15 @@ namespace BoggleClient
             }
         }
 
-        private void button1_Click_1(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            model.GameStatus(false, textBoxServer.Text);
+           
+
         }
-        
+
+        private void panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }

@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿//Meysam Hamel & Eric Miramontes
+//PS8
+
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -16,9 +19,18 @@ namespace BoggleClient
         
         public string CurrentUID = "";
         public string GameID = "";
-        public string TimeLeft = "";
-        public int GameEnded = 0;
+        public int TimeLeft = -1;
+        public string GameState;
         public string Board = "";
+        public string Player1 = "Player 1";
+        public string Player2 = "Player 2";
+        public int Player1Score;
+        public int Player2Score;
+        //public Dictionary<string, float> Player1WordsPlayed = new Dictionary<string, float>();
+        //public Dictionary<string, float> Player2WordsPlayed = new Dictionary<string, float>();
+        public dynamic Player1WordsPlayed = new ExpandoObject();
+        public dynamic Player2WordsPlayed = new ExpandoObject();
+
         public static HttpClient CreateClient(string serverName)
         {
 
@@ -65,7 +77,7 @@ namespace BoggleClient
                 data.UserToken = CurrentUID;
                 data.TimeLimit = TimeLimit;
                 Console.WriteLine(TimeLimit);
-               StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
                 HttpResponseMessage response = client.PostAsync("games", content).Result;
 
@@ -81,11 +93,7 @@ namespace BoggleClient
                     Console.WriteLine("API Error: " + response.StatusCode);
                     Console.WriteLine(response.ReasonPhrase);
                 }
-
-
-
             }
-
         }
 
 
@@ -105,7 +113,7 @@ namespace BoggleClient
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
-                    GameEnded = 1;
+                    GameState = "";
                     //Console.WriteLine(JSONoutput);
                 }
 
@@ -114,9 +122,7 @@ namespace BoggleClient
                     Console.WriteLine("API Error: " + response.StatusCode);
                     Console.WriteLine(response.ReasonPhrase);
                 }
-
             }
-
         }
 
         public void PlayWordRequest(string word, string serverName)
@@ -147,53 +153,76 @@ namespace BoggleClient
 
             }
         }
-        public void GameStatus(bool breif, string serverName)
+
+        public void GameStatus(bool brief, string serverName)
         {
 
             using (HttpClient client = CreateClient(serverName))
             {
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
-                var breifpar = "";
-
-                if (breif)
-                {
-                    breifpar = "?Brief=yes";
-                }
-
-                //StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
 
-
-                HttpResponseMessage response = client.GetAsync("games/"+GameID+breifpar).Result;
+                HttpResponseMessage response = client.GetAsync("games/" + GameID + (brief ? "?Brief=yes" : "")).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
-                    TimeLeft = JSONoutput.TimeLeft;
-                    Board = JSONoutput.Board;
-                    //try {
-                    //    if (JSONoutput.Board)
-                    //    {
-                    //        for (int i = 0; i < 15; i++)
-                    //        {
-                    //            Console.WriteLine(JSONoutput.Board[i]);
-                    //        }
-                    //    }
-                    //}
-                    //catch
-                    //{
 
-                    //}
+                    GameState = JSONoutput.GameState;
+                    if (brief)
+                    {
+                        TimeLeft = JSONoutput.TimeLeft;
+                        Player1Score = JSONoutput.Player1.Score;
+                        Player2Score = JSONoutput.Player2.Score;
+                    }
+
+                    if (GameState != "pending" && !brief)
+                    {
+                        TimeLeft = JSONoutput.TimeLeft;
+                        Board = JSONoutput.Board;
+                        Player1 = JSONoutput.Player1.Nickname;
+                        Player2 = JSONoutput.Player2.Nickname;
+                        Player1Score = JSONoutput.Player1.Score;
+                        Player2Score = JSONoutput.Player2.Score;
+                    }
+
+                    if (GameState == "completed" && !brief)
+                    {
+                        Player1WordsPlayed = JSONoutput.Player1.WordsPlayed;
+                        Player2WordsPlayed = JSONoutput.Player2.WordsPlayed;
+                        //foreach (dynamic word in JSONoutput.Player1.WordsPlayed)
+                        //{
+                        //    try
+                        //    {
+                        //        Player1WordsPlayed.Add(word.Word, word.Score);
+                        //        Console.WriteLine(word.Word);
+                        //    }
+                        //    catch
+                        //    {
+
+                        //    }
+
+                        //}
+
+                        //foreach (dynamic word in JSONoutput.Player2.WordsPlayed)
+                        //{
+                        //    try
+                        //    {
+                        //        Player1WordsPlayed.Add(word.Word, word.Score);
+                        //        Console.WriteLine(word.Word);
+                        //    }
+                        //    catch
+                        //    {
+
+                        //    }
+                        //}
+                    }
+
                     Console.WriteLine(JSONoutput);
                 }
-
-
             }
-
-
-
         }
     }
 }

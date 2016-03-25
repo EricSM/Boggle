@@ -18,6 +18,8 @@ namespace BoggleClient
     {
         public Model model;
 
+        private int switchcolors = 0;
+
         public View()
         {
             InitializeComponent();
@@ -135,22 +137,26 @@ namespace BoggleClient
 
                 if (model.Board.Length > 0)
                 {
-                    Dice1.ForeColor = GetRandomColour();
-                    Dice2.ForeColor = GetRandomColour();
-                    Dice3.ForeColor = GetRandomColour();
-                    Dice4.ForeColor = GetRandomColour();
-                    Dice5.ForeColor = GetRandomColour();
-                    Dice6.ForeColor = GetRandomColour();
-                    Dice7.ForeColor = GetRandomColour();
-                    Dice8.ForeColor = GetRandomColour();
-                    Dice9.ForeColor = GetRandomColour();
-                    Dice10.ForeColor = GetRandomColour();
-                    Dice11.ForeColor = GetRandomColour();
-                    Dice12.ForeColor = GetRandomColour();
-                    Dice13.ForeColor = GetRandomColour();
-                    Dice14.ForeColor = GetRandomColour();
-                    Dice15.ForeColor = GetRandomColour();
-                    Dice16.ForeColor = GetRandomColour();
+                    if(switchcolors == 0)
+                    {
+                        Dice1.ForeColor = GetRandomColour();
+                        Dice2.ForeColor = GetRandomColour();
+                        Dice3.ForeColor = GetRandomColour();
+                        Dice4.ForeColor = GetRandomColour();
+                        Dice5.ForeColor = GetRandomColour();
+                        Dice6.ForeColor = GetRandomColour();
+                        Dice7.ForeColor = GetRandomColour();
+                        Dice8.ForeColor = GetRandomColour();
+                        Dice9.ForeColor = GetRandomColour();
+                        Dice10.ForeColor = GetRandomColour();
+                        Dice11.ForeColor = GetRandomColour();
+                        Dice12.ForeColor = GetRandomColour();
+                        Dice13.ForeColor = GetRandomColour();
+                        Dice14.ForeColor = GetRandomColour();
+                        Dice15.ForeColor = GetRandomColour();
+                        Dice16.ForeColor = GetRandomColour();
+                        switchcolors = 1;
+                    }
 
                     Dice1.Text = model.Board[0].ToString();
                     Dice2.Text = model.Board[1].ToString();

@@ -11,42 +11,55 @@ namespace BoggleClient
 {
     public class Model
     {
-        public string CurrentUID = "";
-        public string GameID = "";
+        public string CurrentUID = ""; // Player Id
+        public string GameID = ""; // Current game id;
         public int TimeLeft = -1;
-        public string GameState;
-        public string Board = "";
-        public string Player1 = "Player 1";
+        public string GameState; // Pending, active or completed
+        public string Board = ""; // The letters the dice rolled on
+        public string Player1 = "Player 1"; // GamerTags
         public string Player2 = "Player 2";
         public int Player1Score;
         public int Player2Score;
+
+        // Words both players played.
         public Dictionary<string, int> Player1WordsPlayed = new Dictionary<string, int>();
         public Dictionary<string, int> Player2WordsPlayed = new Dictionary<string, int>();
 
+        /// <summary>
+        /// Creates an HttpClient for communicating with a boggle server.
+        /// </summary>
+        /// <param name="serverName">Boggle server</param>
+        /// <returns></returns>
         public static HttpClient CreateClient(string serverName)
         {
-
+            // Create client with given uri server name.
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri(serverName);
 
+            // Client accepts JSON
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Add("Accept", "application/json");
 
             return client;
         }
 
+        /// <summary>
+        /// Create a new user
+        /// </summary>
+        /// <param name="NickName">GamerTag</param>
+        /// <param name="serverName">Boggle Server</param>
         public void CreateUser(string NickName, string serverName)
         {
-            using (HttpClient client = CreateClient(serverName))
+            using (HttpClient client = CreateClient(serverName))// Create HTTP Client
             {
-
+                // Serialize data and send Post request to server.
                 dynamic data = new ExpandoObject();
                 data.Nickname = NickName;
 
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
                 HttpResponseMessage response = client.PostAsync("users", content).Result;
 
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)// If successful, deserialize and retrieve response data.
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
@@ -61,10 +74,16 @@ namespace BoggleClient
             }
         }
 
+        /// <summary>
+        /// Join a game.
+        /// </summary>
+        /// <param name="TimeLimit">Desired time limit</param>
+        /// <param name="serverName">Boggle server</param>
         public void JoinGame(int TimeLimit, string serverName)
         {
             using (HttpClient client = CreateClient(serverName))
             {
+                // Serialize data and send Post request to server.
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
                 data.TimeLimit = TimeLimit;
@@ -73,7 +92,7 @@ namespace BoggleClient
 
                 HttpResponseMessage response = client.PostAsync("games", content).Result;
 
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)// If successful, deserialize and retrieve response data.
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
@@ -88,12 +107,15 @@ namespace BoggleClient
             }
         }
 
-
+        /// <summary>
+        /// Cancel a pending request to join a game.
+        /// </summary>
+        /// <param name="serverName"></param>
         public void CancelJoinRequest(string serverName)
         {
             using (HttpClient client = CreateClient(serverName))
             {
-
+                // Serialize data and send Put request to server.
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
@@ -101,12 +123,12 @@ namespace BoggleClient
 
                 HttpResponseMessage response = client.PutAsync("games", content).Result;
                 Console.WriteLine(CurrentUID);
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)// If successful, deserialize and retrieve response data.
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
                     GameState = "";
-                    //Console.WriteLine(JSONoutput);
+                    Console.WriteLine(JSONoutput);
                 }
 
                 else
@@ -117,11 +139,16 @@ namespace BoggleClient
             }
         }
 
+        /// <summary>
+        /// Play a word in a game.
+        /// </summary>
+        /// <param name="word">Word being played</param>
+        /// <param name="serverName">Boggle server</param>
         public void PlayWordRequest(string word, string serverName)
         {
             using (HttpClient client = CreateClient(serverName))
             {
-
+                // Serialize data and send Put request to server.
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
                 data.Word = word;
@@ -130,7 +157,7 @@ namespace BoggleClient
 
                 HttpResponseMessage response = client.PutAsync("games/"+GameID, content).Result;
 
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)// If successful, deserialize and retrieve response data.
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
@@ -146,18 +173,24 @@ namespace BoggleClient
             }
         }
 
+        /// <summary>
+        /// Get game status information.
+        /// </summary>
+        /// <param name="brief">If client wants brief or extensive information</param>
+        /// <param name="serverName">Boggle server</param>
         public void GameStatus(bool brief, string serverName)
         {
 
             using (HttpClient client = CreateClient(serverName))
             {
+                // Serialize data and send Get request to server.
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
 
 
                 HttpResponseMessage response = client.GetAsync("games/" + GameID + (brief ? "?Brief=yes" : "")).Result;
 
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)// If successful, deserialize and retrieve response data.
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);

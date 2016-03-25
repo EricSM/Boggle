@@ -104,6 +104,8 @@ namespace BoggleClient
             labelTime.Text = model.TimeLeft.ToString();
             labelPlayer1.Text = model.Player1;
             labelPlayer2.Text = model.Player2;
+            label2.Text = model.Player1;
+            label3.Text = model.Player2;
 
             if (model.TimeLeft == 0)
         {
@@ -116,6 +118,9 @@ namespace BoggleClient
                 dataGridView1.ColumnCount = 2;
                 dataGridView1.Columns[0].Name = "Word Played";
                 dataGridView1.Columns[1].Name = "Score";
+                dataGridView2.ColumnCount = 2;
+                dataGridView2.Columns[0].Name = "Word Played";
+                dataGridView2.Columns[1].Name = "Score";
 
                 foreach (var playedword in model.Player1WordsPlayed)
                 {
@@ -127,10 +132,10 @@ namespace BoggleClient
                     
                 }
 
-                foreach (var playedword in model.Player1WordsPlayed)
+                foreach (var playedword in model.Player2WordsPlayed)
                 {
                     string[] row = new string[] { playedword.Word, playedword.Score };
-                    dataGridView1.Rows.Add(row);
+                    dataGridView2.Rows.Add(row);
                     Console.WriteLine(playedword.Word);
                 }
 

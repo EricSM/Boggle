@@ -13,13 +13,15 @@ namespace BoggleClient
     {
         public string CurrentUID = "";
         public string GameID = "";
-        public string TimeLeft = "";
+        public int TimeLeft = -1;
         public string GameState;
         public string Board = "";
-        public string Player1;
-        public string Player2;
+        public string Player1 = "Player 1";
+        public string Player2 = "Player 2";
         public int Player1Score;
         public int Player2Score;
+        public Dictionary<string, int> Player1WordsPlayed = new Dictionary<string, int>();
+        public Dictionary<string, int> Player2WordsPlayed = new Dictionary<string, int>();
 
         public static HttpClient CreateClient(string serverName)
         {
@@ -159,14 +161,37 @@ namespace BoggleClient
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
+
                     GameState = JSONoutput.GameState;
-                    TimeLeft = JSONoutput.TimeLeft;
-                    Board = JSONoutput.Board;
-                    Player1 = JSONoutput.Player1.Nickname;
-                    Player2 = JSONoutput.Player2.Nickname;
-                    Player1Score = JSONoutput.Player1.Score;
-                    Player2Score = JSONoutput.Player2.Score;
-                    
+                    if (brief)
+                    {
+                        TimeLeft = JSONoutput.TimeLeft;
+                        Player1Score = JSONoutput.Player1.Score;
+                        Player2Score = JSONoutput.Player2.Score;
+                    }
+
+                    if (GameState != "pending" && !brief)
+                    {
+                        TimeLeft = JSONoutput.TimeLeft;
+                        Board = JSONoutput.Board;
+                        Player1 = JSONoutput.Player1.Nickname;
+                        Player2 = JSONoutput.Player2.Nickname;
+                        Player1Score = JSONoutput.Player1.Score;
+                        Player2Score = JSONoutput.Player2.Score;
+                    }
+
+                    /*if (GameState == "complete" && !brief)
+                    {
+                        foreach (dynamic word in JSONoutput.Player1.WordsPlayed)
+                        {
+                            Player1WordsPlayed.Add(word.Word, word.Score);
+                        }
+
+                        foreach (dynamic word in JSONoutput.Player2.WordsPlayed)
+                        {
+                            Player2WordsPlayed.Add(word.Word, word.Score);
+                        }
+                    }*/
 
                     Console.WriteLine(JSONoutput);
                 }

@@ -56,7 +56,6 @@ namespace BoggleClient
             {
                 this.Close();
             }
-
         }
 
         private void buttonSubmit_Click(object sender, EventArgs e)
@@ -82,14 +81,16 @@ namespace BoggleClient
             model.GameStatus(false, textBoxServer.Text);
 
             labelStatus.Text = model.GameState;
-            labelTime.Text = model.TimeLeft;
+            labelTime.Text = model.TimeLeft.ToString();
+            labelPlayer1.Text = model.Player1;
+            labelPlayer2.Text = model.Player2;
 
-            if (model.TimeLeft == "0")
+            if (model.TimeLeft == 0)
             {
                 model.GameStatus(false, textBoxServer.Text);
                 Console.WriteLine("Times up");
+                //MessageBox.Show(model.Player1WordsPlayed.ToString());
                 timer1.Enabled = false;
-                MessageBox.Show("");
             }
             try
             {

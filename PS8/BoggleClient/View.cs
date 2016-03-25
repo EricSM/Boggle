@@ -24,12 +24,7 @@ namespace BoggleClient
         {
             InitializeComponent();
             model = new Model();
-
-            //random info
-            //textBoxPlayerName.Text = GetRandomString();
-            //Random r = new Random();
-            //int rInt = r.Next(10, 100); //for ints
-            //textBoxTime.Text = "15";//rInt.ToString();
+            
         }
 
         private void buttonJoinGame_Click(object sender, EventArgs e)
@@ -62,7 +57,9 @@ namespace BoggleClient
                 this.Close();
             }
 
-
+            buttonCancel.Text = "Cancel";
+            panel3.Visible = false;
+            timer1.Enabled = false;
             buttonCancel.Enabled = false;
             buttonJoinGame.Enabled = true;
             buttonSubmit.Enabled = false;
@@ -108,10 +105,11 @@ namespace BoggleClient
             label3.Text = model.Player2;
 
             if (model.TimeLeft == 0)
-        {
-            model.GameStatus(false, textBoxServer.Text);
+            {
+                model.GameStatus(false, textBoxServer.Text);
                 Console.WriteLine("Times up");
                 timer1.Enabled = false;
+                buttonCancel.Text = "New Game";
 
                 panel3.Visible = true;
 

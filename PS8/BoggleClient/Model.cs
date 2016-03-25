@@ -17,44 +17,55 @@ namespace BoggleClient
         //The 16 char on the boggle game as a string 
         //private string board;
         
-        public string CurrentUID = "";
-        public string GameID = "";
+        public string CurrentUID = ""; // Player ID
+        public string GameID = ""; // Current game ID
         public int TimeLeft = -1;
-        public string GameState;
-        public string Board = "";
-        public string Player1 = "Player 1";
+        public string GameState; // Pending, active or completed
+        public string Board = ""; // The letters the dice rolled on
+        public string Player1 = "Player 1"; // Gamertags
         public string Player2 = "Player 2";
         public int Player1Score;
         public int Player2Score;
-        //public Dictionary<string, float> Player1WordsPlayed = new Dictionary<string, float>();
-        //public Dictionary<string, float> Player2WordsPlayed = new Dictionary<string, float>();
+
+        // Words both players played
         public dynamic Player1WordsPlayed = new ExpandoObject();
         public dynamic Player2WordsPlayed = new ExpandoObject();
 
+        /// <summary>
+        /// Creates an HttpClient for communicating with a boggle server.
+        /// </summary>
+        /// <param name="serverName">Boggle server</param>
+        /// <returns></returns>
         public static HttpClient CreateClient(string serverName)
         {
-
+            // Create client with given uri server name.
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri(serverName);
 
+            // Client accepts JSON
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Add("Accept", "application/json");
 
             return client;
         }
 
+        /// <summary>
+        /// Create a new user
+        /// </summary>
+        /// <param name="NickName">GamerTag</param>
+        /// <param name="serverName">Boggle Server</param>
         public void CreateUser(string NickName, string serverName)
         {
-            using (HttpClient client = CreateClient(serverName))
+            using (HttpClient client = CreateClient(serverName)) // Create HTTP Client
             {
-
+                // Serialize data and send Post request to server
                 dynamic data = new ExpandoObject();
                 data.Nickname = NickName;
 
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
                 HttpResponseMessage response = client.PostAsync("users", content).Result;
 
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode) // If successful, deserialize and retrieve response data.
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
@@ -73,6 +84,7 @@ namespace BoggleClient
         {
             using (HttpClient client = CreateClient(serverName))
             {
+                // Serialize data and send Post request to server
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
                 data.TimeLimit = TimeLimit;
@@ -81,7 +93,7 @@ namespace BoggleClient
 
                 HttpResponseMessage response = client.PostAsync("games", content).Result;
 
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode) // If successful, deserialize and retrieve response data.
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
@@ -101,7 +113,7 @@ namespace BoggleClient
         {
             using (HttpClient client = CreateClient(serverName))
             {
-
+                // Serialize data and send Put request to server
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
@@ -109,12 +121,12 @@ namespace BoggleClient
 
                 HttpResponseMessage response = client.PutAsync("games", content).Result;
                 Console.WriteLine(CurrentUID);
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode) // If successful, deserialize and retrieve response data.
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
                     GameState = "";
-                    //Console.WriteLine(JSONoutput);
+                    Console.WriteLine(JSONoutput);
                 }
 
                 else
@@ -129,7 +141,7 @@ namespace BoggleClient
         {
             using (HttpClient client = CreateClient(serverName))
             {
-
+                // Serialize data and send Put request to server
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
                 data.Word = word;
@@ -138,7 +150,7 @@ namespace BoggleClient
 
                 HttpResponseMessage response = client.PutAsync("games/"+GameID, content).Result;
 
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode) // If successful, deserialize and retrieve response data.
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
@@ -159,26 +171,28 @@ namespace BoggleClient
 
             using (HttpClient client = CreateClient(serverName))
             {
+                // Serialize data and send Get request to server
                 dynamic data = new ExpandoObject();
                 data.UserToken = CurrentUID;
 
 
                 HttpResponseMessage response = client.GetAsync("games/" + GameID + (brief ? "?Brief=yes" : "")).Result;
 
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode) // If successful, deserialize and retrieve response data.
                 {
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic JSONoutput = JsonConvert.DeserializeObject(result);
 
                     GameState = JSONoutput.GameState;
-                    if (brief)
+                    if (brief) // IF client requests brief information
                     {
                         TimeLeft = JSONoutput.TimeLeft;
                         Player1Score = JSONoutput.Player1.Score;
                         Player2Score = JSONoutput.Player2.Score;
                     }
 
-                    if (GameState != "pending" && !brief)
+                    // if client wants full information
+                    if (GameState != "pending" && !brief) // if state is active or complete
                     {
                         TimeLeft = JSONoutput.TimeLeft;
                         Board = JSONoutput.Board;
@@ -188,36 +202,10 @@ namespace BoggleClient
                         Player2Score = JSONoutput.Player2.Score;
                     }
 
-                    if (GameState == "completed" && !brief)
+                    if (GameState == "completed" && !brief) // if state is complete
                     {
                         Player1WordsPlayed = JSONoutput.Player1.WordsPlayed;
                         Player2WordsPlayed = JSONoutput.Player2.WordsPlayed;
-                        //foreach (dynamic word in JSONoutput.Player1.WordsPlayed)
-                        //{
-                        //    try
-                        //    {
-                        //        Player1WordsPlayed.Add(word.Word, word.Score);
-                        //        Console.WriteLine(word.Word);
-                        //    }
-                        //    catch
-                        //    {
-
-                        //    }
-
-                        //}
-
-                        //foreach (dynamic word in JSONoutput.Player2.WordsPlayed)
-                        //{
-                        //    try
-                        //    {
-                        //        Player1WordsPlayed.Add(word.Word, word.Score);
-                        //        Console.WriteLine(word.Word);
-                        //    }
-                        //    catch
-                        //    {
-
-                        //    }
-                        //}
                     }
 
                     Console.WriteLine(JSONoutput);

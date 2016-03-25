@@ -27,18 +27,20 @@ namespace BoggleClient
             
         }
 
+        // User tries to join a game
         private void buttonJoinGame_Click(object sender, EventArgs e)
         {            
+            // Communicate with servers on different thread.
             Task task = new Task(() => 
             {
                 model.CreateUser(textBoxPlayerName.Text, textBoxServer.Text);
-                model.JoinGame(int.Parse(textBoxTime.Text), textBoxServer.Text);
-           
+                model.JoinGame(int.Parse(textBoxTime.Text), textBoxServer.Text);           
             });
 
             task.Start();
             timer1.Enabled = true;
 
+            // Disable textboxes and join button
             buttonJoinGame.Enabled = false;
             buttonCancel.Enabled = true;
             buttonSubmit.Enabled = true;
@@ -57,6 +59,7 @@ namespace BoggleClient
                 this.Close();
             }
 
+            // Disable and enable relevant buttons, textboxes, etc.
             buttonCancel.Text = "Cancel";
             panel3.Visible = false;
             timer1.Enabled = false;
@@ -80,7 +83,7 @@ namespace BoggleClient
             path = path.Replace(".", ""); 
             return path;
         }
-        //
+        
         private void endgame()
         {
             this.Close();
@@ -88,6 +91,7 @@ namespace BoggleClient
 
         private static readonly Random rand = new Random();
 
+        // To color the dice :)
         private Color GetRandomColour()
         {
             return Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256));
@@ -95,8 +99,10 @@ namespace BoggleClient
 
         private void timer1_Tick(object sender, EventArgs e)
         {
+            // Get game status
             model.GameStatus(false, textBoxServer.Text);
             
+            // Update scores, timer, etc.
             labelStatus.Text = model.GameState;
             labelTime.Text = model.TimeLeft.ToString();
             labelPlayer1.Text = model.Player1;
@@ -104,13 +110,16 @@ namespace BoggleClient
             label2.Text = model.Player1;
             label3.Text = model.Player2;
 
-            if (model.TimeLeft == 0)
+            if (model.TimeLeft == 0)// When game is over
             {
                 model.GameStatus(false, textBoxServer.Text);
                 Console.WriteLine("Times up");
                 timer1.Enabled = false;
                 buttonCancel.Text = "New Game";
 
+                
+                // Display words used by both players the the scores of each word.
+                
                 panel3.Visible = true;
 
                 dataGridView1.ColumnCount = 2;
@@ -138,7 +147,7 @@ namespace BoggleClient
                 }
 
             }
-            try
+            try // update scores and color the board
             {
                 textBoxPlayer1Score.Text = model.Player1Score.ToString();
                 textBoxPlayer2Score.Text = model.Player2Score.ToString();

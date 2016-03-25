@@ -41,6 +41,7 @@ namespace BoggleClient
 
             buttonJoinGame.Enabled = false;
             buttonCancel.Enabled = true;
+            buttonSubmit.Enabled = true;
             textBoxServer.ReadOnly = textBoxPlayerName.ReadOnly = textBoxTime.ReadOnly = true;
         }
 

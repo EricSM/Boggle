@@ -9,6 +9,11 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
+        private readonly static Dictionary<String, UserInfo> users = new Dictionary<String, UserInfo>();
+        private readonly static Dictionary<String, Game> games = new Dictionary<String, Game>();
+        private static readonly object sync = new object();
+
+
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
         /// an http response is sent.

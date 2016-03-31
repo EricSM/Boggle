@@ -14,9 +14,11 @@ namespace Boggle
 
     public class Game
     {
+        private string gameState = "pending";
+
         public string GameID { get; set; }
 
-        public string GameState { get; set; }
+        public string GameState { get { return gameState; } set { gameState = value; } }
 
         public string Player1Token { get; set; }
 
@@ -25,6 +27,8 @@ namespace Boggle
         public string GameBoard { get; set; }
 
         public int TimeLimit { get; set; }
+
+        public DateTime StartTime { get; set; }
 
         public int TimeLeft { get; set; }
 

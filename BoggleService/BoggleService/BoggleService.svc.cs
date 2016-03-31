@@ -38,7 +38,21 @@ namespace Boggle
 
         public void CancelJoin(string userToken)
         {
-            throw new NotImplementedException();
+            //If UserToken is invalid or is not a player in the pending game, responds with status 403 (Forbidden).
+            if (userToken == null || !users.ContainsKey(userToken) || (games[gameID].Player1Token != userToken && games[gameID].Player2Token != userToken))
+            {
+                SetStatus(Forbidden);
+            }
+            else // Otherwise, removes UserToken from the pending game and responds with status 200 (OK).
+            {
+                lock (sync)
+                {
+                    games[gameID].Player1Token = null;
+                }
+
+                SetStatus(OK);
+            }
+
         }
 
         public string CreateUser(string nickname)
@@ -60,6 +74,7 @@ namespace Boggle
                 {
                     users.Add(UserToken, userInfo);
                 }
+
                 return UserToken;
             }
         }
@@ -84,27 +99,39 @@ namespace Boggle
 
             if (games[gameID].Player1Token != null && games[gameID].Player2Token == null)
             {
-                games[gameID].Player2Token = userToken;
                 string GameID = gameID.ToString();
-                StartPendingGame(timeLimit);
+
+                lock (sync)
+                {
+                    games[gameID].Player2Token = userToken;
+                    StartPendingGame(timeLimit);
+                }
 
                 SetStatus(Created);
                 return GameID;
             }
             else if (games[gameID].Player2Token != null || games[gameID].Player1Token == null)
             {
-                games[gameID].Player1Token = userToken;
                 string GameID = gameID.ToString();
-                StartPendingGame(timeLimit);
+
+                lock (sync)
+                {
+                    games[gameID].Player1Token = userToken;
+                    StartPendingGame(timeLimit);
+                }
 
                 SetStatus(Created);
                 return GameID;
             }
             else
             {
-                games[gameID].Player1Token = userToken;
-                games[gameID].TimeLimit = timeLimit;
                 string GameID = gameID.ToString();
+
+                lock (sync)
+                {
+                    games[gameID].Player1Token = userToken;
+                    games[gameID].TimeLimit = timeLimit;
+                }
                                 
                 SetStatus(Accepted);
                 return GameID;

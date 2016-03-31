@@ -75,6 +75,7 @@ namespace Boggle
                     users.Add(UserToken, userInfo);
                 }
 
+                SetStatus(Created);
                 return UserToken;
             }
         }
@@ -149,9 +150,22 @@ namespace Boggle
             games.Add(gameID, new Game());
         }
 
-        public void PlayWord(int gameID)
+        public void PlayWord(int gameID, string UserToken, string Word)
         {
-            throw new NotImplementedException();
+            // If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid,
+            // or if UserToken is not a player in the game identified by GameID, responds with response code 403 (Forbidden).
+            if (Word == null || Word.Trim() == string.Empty || !users.ContainsKey(UserToken) || 
+                (games[gameID].Player1Token != UserToken && games[gameID].Player2Token != UserToken))
+            {
+                SetStatus(Forbidden);
+            }
+            // Otherwise, if the game state is anything other than "active", responds with response code 409(Conflict).
+            else if (games[gameID].GameState != "active")
+            {
+                SetStatus(Conflict);
+            }
+
+            // TODO Otherwise, records the trimmed Word as being played by UserToken in the game identified by GameID.Returns the score for Word in the context of the game(e.g. if Word has been played before the score is zero). Responds with status 200(OK).Note: The word is not case sensitive.
         }
     }
 }

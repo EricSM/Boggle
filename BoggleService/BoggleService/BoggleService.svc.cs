@@ -95,7 +95,15 @@ namespace Boggle
                     return new GameStatus() { GameState = "pending" };
                 }
 
-
+                if ((games[gameID].GameState == "active" || games[gameID].GameState == "complete") && brief == "yes")
+                {
+                    SetStatus(OK);
+                    return new GameStatus()
+                    {
+                        GameState = "pending",
+                        //TimeLeft = 
+                    };
+                }
 
                 SetStatus(OK);
                 return null;

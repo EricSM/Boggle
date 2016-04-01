@@ -142,7 +142,7 @@ namespace Boggle
         {
             using (HttpClient client = CreateClient())
             {
-                HttpResponseMessage response = await client.DeleteAsync("ToDo.svc/" + url);
+                HttpResponseMessage response = await client.DeleteAsync("BoggleService.svc/" + url);
 
                 if (response.IsSuccessStatusCode)
                 {

@@ -169,7 +169,13 @@ namespace Boggle
                     };
                 }
 
-                // TODO update game
+                games[gameID].TimeLeft -= (DateTime.Now - thisGame.StartTime).Seconds;
+
+                if (games[gameID].TimeLeft <= 0)
+                {
+                    games[gameID].GameState = "complete";
+                    games[gameID].TimeLeft = 0;
+                }
 
                 SetStatus(OK);
                 return status;
@@ -235,9 +241,11 @@ namespace Boggle
 
         private void StartPendingGame(int timeLimit)
         {
+            int timeLeft = (games[gameID].TimeLimit + timeLimit) / 2;
             games[gameID].GameState = "active";
             games[gameID].GameBoard = new BoggleBoard().ToString();
-            games[gameID].TimeLimit = (games[gameID].TimeLimit + timeLimit) / 2;
+            games[gameID].TimeLimit = timeLeft;
+            games[gameID].TimeLeft = timeLeft;
             games[gameID].StartTime = DateTime.Now;
             gameID++;
             games.Add(gameID, new Game());

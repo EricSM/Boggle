@@ -42,6 +42,9 @@ namespace Boggle
         public Dictionary<string, int> Player2WordScores { get; set; }
     }
 
+    /// <summary>
+    /// Data sent through a join request.
+    /// </summary>
     public class JoinRequest
     {
         public string UserToken { get; set; }
@@ -49,6 +52,9 @@ namespace Boggle
         public int TimeLimit { get; set; }
     }
 
+    /// <summary>
+    /// List of words and scores recieved with a status request.
+    /// </summary>
     public class WordPlayed
     {
         public string UserToken { get; set; }
@@ -92,6 +98,9 @@ namespace Boggle
         public HashSet<WordScore> WordsPlayed { get; set; }
     }
 
+    /// <summary>
+    /// List of words and their scores sent back with a status update.
+    /// </summary>
     public class WordScore
     {
         public string Word { get; set; }

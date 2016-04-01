@@ -66,27 +66,7 @@ namespace Boggle
 
         private RestTestClient client = new RestTestClient("http://localhost:60000/");
 
-        /*
-        [TestMethod]
-        public void TestMethod1()
-        {
-            Response r = client.DoGetAsync("/numbers?length={0}", "5").Result;
-            Assert.AreEqual(OK, r.Status);
-            Assert.AreEqual(5, r.Data.Count);
-            r = client.DoGetAsync("/numbers?length={0}", "-5").Result;
-            Assert.AreEqual(Forbidden, r.Status);
-        }
-
-        [TestMethod]
-        public void TestMethod2()
-        {
-            List<int> list = new List<int>();
-            list.Add(15);
-            Response r = client.DoPostAsync("/first", list).Result;
-            Assert.AreEqual(OK, r.Status);
-            Assert.AreEqual(15, r.Data);
-        }
-        */
+        
         [TestMethod]
         public void TestCreateUser1()
         {
@@ -95,5 +75,60 @@ namespace Boggle
             Assert.AreEqual(36, r.Data.Count);
         }
 
+        [TestMethod]
+        public void TestCreateUser2()
+        {
+            Response r = client.DoPostAsync("/users", null).Result;
+            Assert.AreEqual(Forbidden, r.Status);
+        }
+
+        [TestMethod]
+        public void TestJoinGame1()
+        {
+            Response r1 = client.DoPostAsync("/games", new JoinRequest() { UserToken = "abcd", TimeLimit = 30 }).Result;
+            Assert.AreEqual(Forbidden, r1.Status);
+        }
+
+        [TestMethod]
+        public void TestJoinGame2()
+        {
+            string userToken = client.DoPostAsync("/users", "joe").Result.Data;
+            Response r1 = client.DoPostAsync("/games", new JoinRequest() { UserToken = userToken, TimeLimit = 30 }).Result;
+            Assert.AreEqual(Accepted, r1.Status);
+
+            Response r2 = client.DoPostAsync("/games", new JoinRequest() { UserToken = userToken, TimeLimit = 30 }).Result;
+            Assert.AreEqual(Conflict, r1.Status);
+
+            string userToken2 = client.DoPostAsync("/users", "conor").Result.Data;
+            Response r3 = client.DoPostAsync("/games", new JoinRequest() { UserToken = userToken2, TimeLimit = 30 }).Result;
+            Assert.AreEqual(Created, r3.Status);
+        }
+
+        [TestMethod]
+        public void TestCancelJoin1()
+        {
+            Response r = client.DoPutAsync("/games", "abcd").Result;
+            Assert.AreEqual(Forbidden, r.Status);
+        }
+
+        [TestMethod]
+        public void TestCancelJoin2()
+        {
+            string userToken = client.DoPostAsync("/users", "fabian").Result.Data;
+            Response r = client.DoPutAsync("/games", userToken).Result;
+            Assert.AreEqual(OK, r.Status);
+        }
+
+        [TestMethod]
+        public void TestPlayWord()
+        {
+            string userToken1 = client.DoPostAsync("/users", "john").Result.Data;
+            Response r1 = client.DoPostAsync("/games", new JoinRequest() { UserToken = userToken1, TimeLimit = 30 }).Result;
+            string userToken2 = client.DoPostAsync("/users", "smith").Result.Data;
+            Response r2 = client.DoPostAsync("/games", new JoinRequest() { UserToken = userToken2, TimeLimit = 30 }).Result;
+
+            Response r = client.DoPutAsync( new WordPlayed() { UserToken = userToken1, Word = null}, "/games/" + r1.Data.GameID).Result;
+            Assert.AreEqual(Forbidden, r.Data);
+        }
     }
 }

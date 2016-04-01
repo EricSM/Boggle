@@ -57,11 +57,13 @@ namespace Boggle
 
         public string CreateUser(string nickname)
         {
+            // Check for validity
             if (nickname == null || nickname.Trim().Length == 0)
             {
                 SetStatus(Forbidden);
                 return null;
             }
+            // Add new user and return unique token
             else
             {
                 string UserToken = Guid.NewGuid().ToString();
@@ -82,22 +84,25 @@ namespace Boggle
 
         public GameStatus GetGameStatus(int gameID, string brief)
         {
+            // Checks if gameID is valid
             if (!games.ContainsKey(gameID))
             {
                 SetStatus(Forbidden);
                 return null;
             }
+            // else return status and update game
             else
             {
                 Game thisGame = games[gameID];
                 GameStatus status = new GameStatus();
 
+                // if game is pending
                 if (thisGame.GameState == "pending")
                 {
                     SetStatus(OK);
                     return new GameStatus() { GameState = "pending" };
                 }
-
+                // if game is active or completed and "Brief=yes" was a parameter
                 if ((thisGame.GameState == "active" || thisGame.GameState == "complete") && brief == "yes")
                 {
                     status = new GameStatus()
@@ -114,7 +119,8 @@ namespace Boggle
                         }
                     };
                 }
-                else if (thisGame.GameState != "active" && brief != "yes")
+                // if game is active and "Brief=yes" was not a parameter
+                else if (thisGame.GameState == "active" && brief != "yes")
                 {
                     status = new GameStatus()
                     {
@@ -134,6 +140,7 @@ namespace Boggle
                         }
                     };
                 }
+                // if game is complete and user did not specify brief
                 else if (thisGame.GameState == "completed" && brief != "yes")
                 {
                     var Player1Scores = new HashSet<WordScore>();
@@ -169,6 +176,7 @@ namespace Boggle
                     };
                 }
 
+                // update game
                 games[gameID].TimeLeft -= (DateTime.Now - thisGame.StartTime).Seconds;
 
                 if (games[gameID].TimeLeft <= 0)
@@ -187,16 +195,18 @@ namespace Boggle
             string userToken = joinRequest.UserToken;
             int timeLimit = joinRequest.TimeLimit;
 
-            //A user token is valid if it is non - null and identifies a user.
+            //A user token is valid if it is non - null and identifies a user. Time must be between 5 and 120.
             if (userToken == null || !users.ContainsKey(userToken) || timeLimit < 5 || timeLimit > 120)
             {
                 SetStatus(Forbidden);
             }
+            // Check if user is already in pending game.
             else if (games[gameID].Player1Token == userToken || games[gameID].Player2Token == userToken)
             {
                 SetStatus(Conflict);
             }
 
+            // If player 1 is taken, user is player 2
             if (games[gameID].Player1Token != null && games[gameID].Player2Token == null)
             {
                 string GameID = gameID.ToString();
@@ -210,6 +220,7 @@ namespace Boggle
                 SetStatus(Created);
                 return GameID;
             }
+            // if player 2 is taken, user is player 1
             else if (games[gameID].Player2Token != null || games[gameID].Player1Token == null)
             {
                 string GameID = gameID.ToString();
@@ -223,6 +234,7 @@ namespace Boggle
                 SetStatus(Created);
                 return GameID;
             }
+            // if user is first to enter pending game
             else
             {
                 string GameID = gameID.ToString();
@@ -241,6 +253,7 @@ namespace Boggle
 
         private void StartPendingGame(int timeLimit)
         {
+            // Starts a new active game
             int timeLeft = (games[gameID].TimeLimit + timeLimit) / 2;
             games[gameID].GameState = "active";
             games[gameID].GameBoard = new BoggleBoard().ToString();
@@ -254,7 +267,7 @@ namespace Boggle
         public string PlayWord(int gameID, WordPlayed wordPlayed)
         {
             string UserToken = wordPlayed.UserToken;
-            string Word = wordPlayed.Word;
+            string Word = wordPlayed.Word.ToUpper();
 
             // If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid,
             // or if UserToken is not a player in the game identified by GameID, responds with response code 403 (Forbidden).
@@ -292,24 +305,36 @@ namespace Boggle
                     {
                         if (games[gameID].Player1Token == UserToken)
                         {
-                            if (games[gameID].Player1WordScores.ContainsKey(Word.ToUpper()))
+                            if (games[gameID].Player2WordScores.ContainsKey(Word))
+                            {
+                                games[gameID].Player2Score -= games[gameID].Player2WordScores[Word];
+                                games[gameID].Player2WordScores[Word] = score = 0;
+                            }
+
+                            if (games[gameID].Player1WordScores.ContainsKey(Word))
                             {
                                 score = 0;
                             }
                             else
                             {
-                                games[gameID].Player1WordScores.Add(Word.ToUpper(), score);
+                                games[gameID].Player1WordScores.Add(Word, score);
                             }
                         }
                         else if (games[gameID].Player2Token == UserToken)
                         {
-                            if (games[gameID].Player2WordScores.ContainsKey(Word.ToUpper()))
+                            if (games[gameID].Player1WordScores.ContainsKey(Word))
+                            {
+                                games[gameID].Player1Score -= games[gameID].Player1WordScores[Word];
+                                games[gameID].Player1WordScores[Word] = score = 0;
+                            }
+
+                            if (games[gameID].Player2WordScores.ContainsKey(Word))
                             {
                                 score = 0;
                             }
                             else
                             {
-                                games[gameID].Player2WordScores.Add(Word.ToUpper(), score);
+                                games[gameID].Player2WordScores.Add(Word, score);
                             }
                         }
                     }                                        

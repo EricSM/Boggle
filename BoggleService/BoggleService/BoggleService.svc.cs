@@ -89,24 +89,90 @@ namespace Boggle
             }
             else
             {
-                if (games[gameID].GameState == "pending")
+                Game thisGame = games[gameID];
+                GameStatus status = new GameStatus();
+
+                if (thisGame.GameState == "pending")
                 {
                     SetStatus(OK);
                     return new GameStatus() { GameState = "pending" };
                 }
 
-                if ((games[gameID].GameState == "active" || games[gameID].GameState == "complete") && brief == "yes")
+                if ((thisGame.GameState == "active" || thisGame.GameState == "complete") && brief == "yes")
                 {
-                    SetStatus(OK);
-                    return new GameStatus()
+                    status = new GameStatus()
                     {
-                        GameState = "pending",
-                        //TimeLeft = 
+                        GameState = thisGame.GameState,
+                        TimeLeft = thisGame.TimeLeft,
+                        Player1 = new Player()
+                        {
+                            Score = thisGame.Player1Score
+                        },
+                        Player2 = new Player()
+                        {
+                            Score = thisGame.Player2Score
+                        }
+                    };
+                }
+                else if (thisGame.GameState != "active" && brief != "yes")
+                {
+                    status = new GameStatus()
+                    {
+                        GameState = thisGame.GameState,
+                        Board = thisGame.GameBoard,
+                        TimeLimit = thisGame.TimeLimit,
+                        TimeLeft = thisGame.TimeLeft,
+                        Player1 = new Player()
+                        {
+                            Nickname = users[thisGame.Player1Token].Nickname,
+                            Score = thisGame.Player1Score
+                        },
+                        Player2 = new Player()
+                        {
+                            Nickname = users[thisGame.Player2Token].Nickname,
+                            Score = thisGame.Player2Score
+                        }
+                    };
+                }
+                else if (thisGame.GameState == "completed" && brief != "yes")
+                {
+                    var Player1Scores = new HashSet<WordScore>();
+                    foreach (KeyValuePair<string, int> kv in thisGame.Player1WordScores)
+                    {
+                        Player1Scores.Add(new WordScore() { Word = kv.Key, Score = kv.Value });
+                    }
+
+                    var Player2Scores = new HashSet<WordScore>();
+                    foreach (KeyValuePair<string, int> kv in thisGame.Player2WordScores)
+                    {
+                        Player2Scores.Add(new WordScore() { Word = kv.Key, Score = kv.Value });
+                    }
+
+                    status = new GameStatus()
+                    {
+                        GameState = thisGame.GameState,
+                        Board = thisGame.GameBoard,
+                        TimeLimit = thisGame.TimeLimit,
+                        TimeLeft = thisGame.TimeLeft,
+                        Player1 = new Player()
+                        {
+                            Nickname = users[thisGame.Player1Token].Nickname,
+                            Score = thisGame.Player1Score,
+                            WordsPlayed = Player1Scores
+                        },
+                        Player2 = new Player()
+                        {
+                            Nickname = users[thisGame.Player2Token].Nickname,
+                            Score = thisGame.Player2Score,
+                            WordsPlayed = Player2Scores
+                        }
                     };
                 }
 
+                // TODO update game
+
                 SetStatus(OK);
-                return null;
+                return status;
             }
         }
 

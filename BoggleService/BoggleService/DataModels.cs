@@ -63,7 +63,7 @@ namespace Boggle
         public string GameState { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public string GameBoard { get; set; }
+        public string Board { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public int? TimeLimit { get; set; }

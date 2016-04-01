@@ -82,7 +82,24 @@ namespace Boggle
 
         public GameStatus GetGameStatus(int gameID, string brief)
         {
-            throw new NotImplementedException();
+            if (!games.ContainsKey(gameID))
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
+            else
+            {
+                if (games[gameID].GameState == "pending")
+                {
+                    SetStatus(OK);
+                    return new GameStatus() { GameState = "pending" };
+                }
+
+
+
+                SetStatus(OK);
+                return null;
+            }
         }
 
         public string JoinGame(JoinRequest joinRequest)

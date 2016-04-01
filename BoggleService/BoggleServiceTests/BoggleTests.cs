@@ -66,6 +66,7 @@ namespace Boggle
 
         private RestTestClient client = new RestTestClient("http://localhost:60000/");
 
+        /*
         [TestMethod]
         public void TestMethod1()
         {
@@ -85,5 +86,14 @@ namespace Boggle
             Assert.AreEqual(OK, r.Status);
             Assert.AreEqual(15, r.Data);
         }
+        */
+        [TestMethod]
+        public void TestCreateUser1()
+        {
+            Response r = client.DoPostAsync("/users", "Gabe").Result;
+            Assert.AreEqual(Created, r.Status);
+            Assert.AreEqual(36, r.Data.Count);
+        }
+
     }
 }

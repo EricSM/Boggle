@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 namespace Boggle
@@ -41,18 +42,39 @@ namespace Boggle
         public Dictionary<string, int> Player2WordScores { get; set; }
     }
 
-    public class GameStatus
+    public class JoinRequest
     {
-        public string GameState { get; set; }
-
-        public string GameBoard { get; set; }
+        public string UserToken { get; set; }
 
         public int TimeLimit { get; set; }
+    }
 
+    public class WordPlayed
+    {
+        public string UserToken { get; set; }
+
+        public string Word { get; set; }
+    }
+
+    [DataContract]
+    public class GameStatus
+    {
+        [DataMember]
+        public string GameState { get; set; }
+
+        [DataMember]
+        public string GameBoard { get; set; }
+
+        [DataMember]
+        public int TimeLimit { get; set; }
+
+        [DataMember]
         public int TimeLeft { get; set; }
-         
+
+        [DataMember]
         public Player Player1 { get; set; }
 
+        [DataMember]
         public Player Player2 { get; set; }
          
     }
@@ -63,6 +85,13 @@ namespace Boggle
 
         public int Score { get; set; }
 
-        public Dictionary<string, int> WordsPlayed { get; set; }
+        public HashSet<WordScore> WordsPlayed { get; set; }
+    }
+
+    public class WordScore
+    {
+        public string Word { get; set; }
+
+        public int Score { get; set; }
     }
 }

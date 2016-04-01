@@ -12,15 +12,15 @@ namespace Boggle
         string CreateUser(string nickname);
 
         [WebInvoke(Method = "POST", UriTemplate = "/games")]
-        string JoinGame(string userToken, int timeLimit);
+        string JoinGame(JoinRequest joinRequest);
 
         [WebInvoke(Method = "PUT", UriTemplate = "/games")]
         void CancelJoin(string userToken);
 
         [WebInvoke(Method = "PUT", UriTemplate = "/games/{gameID}")]
-        void PlayWord(int gameID, string UserToken, string Word);
+        void PlayWord(int gameID, WordPlayed wordPlayed);
 
-        [WebGet(UriTemplate = "/games/{gameID}")]
-        GameStatus GetGameStatus(int gameID);
+        [WebGet(UriTemplate = "/games/{gameID}?Brief={brief}")]
+        GameStatus GetGameStatus(int gameID, string brief);
     }
 }

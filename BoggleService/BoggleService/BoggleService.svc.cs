@@ -36,10 +36,10 @@ namespace Boggle
             return File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "index.html");
         }
 
-        public void CancelJoin(string userToken)
+        public void CancelJoin(Token userToken)
         {
             //If UserToken is invalid or is not a player in the pending game, responds with status 403 (Forbidden).
-            if (userToken == null || !users.ContainsKey(userToken) || (games[gameID].Player1Token != userToken && games[gameID].Player2Token != userToken))
+            if (userToken.UserToken == null || !users.ContainsKey(userToken.UserToken) || (games[gameID].Player1Token != userToken.UserToken && games[gameID].Player2Token != userToken.UserToken))
             {
                 SetStatus(Forbidden);
             }
@@ -55,30 +55,31 @@ namespace Boggle
 
         }
 
-        public string CreateUser(string nickname)
+        public string CreateUser(Username nickname)
         {
-            // Check for validity
-            if (nickname == null || nickname.Trim().Length == 0)
+            lock (sync)
             {
-                SetStatus(Forbidden);
-                return null;
-            }
-            // Add new user and return unique token
-            else
-            {
-                string UserToken = Guid.NewGuid().ToString();
-
-                UserInfo userInfo = new UserInfo();
-                userInfo.Nickname = nickname;
-                userInfo.UserToken = UserToken;
-
-                lock (sync)
+                // Check for validity
+                if (nickname.Nickname == null || nickname.Nickname.Trim().Length == 0)
                 {
-                    users.Add(UserToken, userInfo);
+                    SetStatus(Forbidden);
+                    return null;
                 }
+                // Add new user and return unique token
+                else
+                {
+                    string UserToken = Guid.NewGuid().ToString();
 
-                SetStatus(Created);
-                return UserToken;
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.Nickname = nickname.Nickname;
+                    userInfo.UserToken = UserToken;
+
+                    
+                    users.Add(UserToken, userInfo);
+
+                    SetStatus(Created);
+                    return UserToken;
+                }
             }
         }
 
@@ -192,63 +193,59 @@ namespace Boggle
 
         public string JoinGame(JoinRequest joinRequest)
         {
-            string userToken = joinRequest.UserToken;
-            int timeLimit = joinRequest.TimeLimit;
-
-            //A user token is valid if it is non - null and identifies a user. Time must be between 5 and 120.
-            if (userToken == null || !users.ContainsKey(userToken) || timeLimit < 5 || timeLimit > 120)
+            lock (sync)
             {
-                SetStatus(Forbidden);
-            }
-            // Check if user is already in pending game.
-            else if (games[gameID].Player1Token == userToken || games[gameID].Player2Token == userToken)
-            {
-                SetStatus(Conflict);
-            }
+                string userToken = joinRequest.UserToken;
+                int timeLimit = joinRequest.TimeLimit;
 
-            // If player 1 is taken, user is player 2
-            if (games[gameID].Player1Token != null && games[gameID].Player2Token == null)
-            {
-                string GameID = gameID.ToString();
-
-                lock (sync)
+                //A user token is valid if it is non - null and identifies a user. Time must be between 5 and 120.
+                if (userToken == null || !users.ContainsKey(userToken) || timeLimit < 5 || timeLimit > 120)
                 {
+                    SetStatus(Forbidden);
+                    return null;
+                }
+                // Check if user is already in pending game.
+                else if (games[gameID].Player1Token == userToken || games[gameID].Player2Token == userToken)
+                {
+                    SetStatus(Conflict);
+                    return null;
+                }
+
+                // If player 1 is taken, user is player 2
+                if (games[gameID].Player1Token != null && games[gameID].Player2Token == null)
+                {
+                    string GameID = gameID.ToString();
+
+
                     games[gameID].Player2Token = userToken;
                     StartPendingGame(timeLimit);
+
+                    SetStatus(Created);
+                    return GameID;
                 }
-
-                SetStatus(Created);
-                return GameID;
-            }
-            // if player 2 is taken, user is player 1
-            else if (games[gameID].Player2Token != null || games[gameID].Player1Token == null)
-            {
-                string GameID = gameID.ToString();
-
-                lock (sync)
+                // if player 2 is taken, user is player 1
+                else if (games[gameID].Player2Token != null && games[gameID].Player1Token == null)
                 {
+                    string GameID = gameID.ToString();
+
                     games[gameID].Player1Token = userToken;
                     StartPendingGame(timeLimit);
+
+                    SetStatus(Created);
+                    return GameID;
                 }
-
-                SetStatus(Created);
-                return GameID;
-            }
-            // if user is first to enter pending game
-            else
-            {
-                string GameID = gameID.ToString();
-
-                lock (sync)
+                // if user is first to enter pending game
+                else
                 {
+                    string GameID = gameID.ToString();
+
                     games[gameID].Player1Token = userToken;
                     games[gameID].TimeLimit = timeLimit;
-                }
-                                
-                SetStatus(Accepted);
-                return GameID;
-            }
 
+                    SetStatus(Accepted);
+                    return GameID;
+                }
+            }
         }
 
         private void StartPendingGame(int timeLimit)

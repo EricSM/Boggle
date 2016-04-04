@@ -41,6 +41,16 @@ namespace Boggle
 
         public Dictionary<string, int> Player2WordScores { get; set; }
     }
+    
+    public class Username
+    {
+        public string Nickname{ get; set; }
+    }
+
+    public class Token
+    {
+        public string UserToken { get; set; }
+    }
 
     /// <summary>
     /// Data sent through a join request.

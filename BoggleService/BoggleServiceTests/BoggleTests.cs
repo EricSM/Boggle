@@ -129,22 +129,30 @@ namespace Boggle
         public void TestCancelJoin2()
         {
             dynamic expando = new ExpandoObject();
-            expando.UserToken = client.DoPostAsync("users", "fabian").Result.Data;
-            Response r = client.DoPutAsync(expando, "games").Result;
-            Assert.AreEqual(OK, r.Status);
+
+            expando.UserToken = client.DoPostAsync("users", new Username() { Nickname = "fabian" }).Result.Data;
+
+            Response r1 = client.DoPostAsync("games", new JoinRequest() { UserToken = expando.UserToken, TimeLimit = 30 }).Result;
+            Assert.AreEqual(Accepted, r1.Status);
+
+            Response r2 = client.DoPutAsync(expando, "games").Result;
+            Assert.AreEqual(OK, r2.Status);
         }
-        /*
+        
         [TestMethod]
         public void TestPlayWord()
         {
-            string userToken1 = client.DoPostAsync("users", "john").Result.Data;
+            string userToken1 = client.DoPostAsync("users", new Username() { Nickname = "john" }).Result.Data;
             Response r1 = client.DoPostAsync("games", new JoinRequest() { UserToken = userToken1, TimeLimit = 30 }).Result;
-            string userToken2 = client.DoPostAsync("users", "smith").Result.Data;
+
+            string userToken2 = client.DoPostAsync("users", new Username(){ Nickname = "smith" }).Result.Data;
             Response r2 = client.DoPostAsync("games", new JoinRequest() { UserToken = userToken2, TimeLimit = 30 }).Result;
 
-            Response r = client.DoPutAsync( new WordPlayed() { UserToken = userToken1, Word = null}, "games/" + r1.Data.GameID).Result;
-            Assert.AreEqual(Forbidden, r.Data);
+
+            string userID = r1.Data.ToString();
+            Response r3 = client.DoPutAsync( new WordPlayed() { UserToken = userToken1, Word = null}, "games/" + userID).Result;
+            Assert.AreEqual(Forbidden, r3.Status);
         }
-        */
+        
     }
 }

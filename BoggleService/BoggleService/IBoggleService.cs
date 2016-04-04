@@ -16,10 +16,10 @@ namespace Boggle
         
         [WebInvoke(Method = "PUT", UriTemplate = "/games")]
         void CancelJoin(Token userToken);
-        /*
+        
         [WebInvoke(Method = "PUT", UriTemplate = "/games/{gameID}")]
-        string PlayWord(int gameID, WordPlayed wordPlayed);
-
+        string PlayWord(string gameID, WordPlayed wordPlayed);
+        /*
         [WebGet(UriTemplate = "/games/{gameID}?Brief={brief}")]
         GameStatus GetGameStatus(int gameID, string brief);*/
     }

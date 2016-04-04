@@ -261,45 +261,46 @@ namespace Boggle
             games.Add(gameID, new Game());
         }
 
-        public string PlayWord(int gameID, WordPlayed wordPlayed)
+        public string PlayWord(string gameIDString, WordPlayed wordPlayed)
         {
-            string UserToken = wordPlayed.UserToken;
-            string Word = wordPlayed.Word.ToUpper();
+            lock (sync)
+            {
+                int gameID = int.Parse(gameIDString);
+                string UserToken = wordPlayed.UserToken;
+                string Word = wordPlayed.Word.ToUpper();
 
-            // If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid,
-            // or if UserToken is not a player in the game identified by GameID, responds with response code 403 (Forbidden).
-            if (Word == null || Word.Trim() == string.Empty || !users.ContainsKey(UserToken) ||
-                (games[gameID].Player1Token != UserToken && games[gameID].Player2Token != UserToken))
-            {
-                SetStatus(Forbidden);
-                return null;
-            }
-            // Otherwise, if the game state is anything other than "active", responds with response code 409(Conflict).
-            else if (games[gameID].GameState != "active")
-            {
-                SetStatus(Conflict);
-                return null;
-            }
-            else
-            {
-                // Otherwise, records the trimmed Word as being played by UserToken in the game identified by GameID.
-                // Returns the score for Word in the context of the game(e.g. if Word has been played before the score is zero). 
-                // Responds with status 200(OK).Note: The word is not case sensitive.
-                BoggleBoard board = new BoggleBoard(games[gameID].GameBoard);
-                int score = 0;
-
-                // TODO Check if word exists in the dictionary
-                if (board.CanBeFormed(Word))
+                // If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid,
+                // or if UserToken is not a player in the game identified by GameID, responds with response code 403 (Forbidden).
+                if (Word == null || Word.Trim() == string.Empty || !users.ContainsKey(UserToken) ||
+                    (games[gameID].Player1Token != UserToken && games[gameID].Player2Token != UserToken))
                 {
-                    
-                    if (Word.Length > 2) score++;
-                    if (Word.Length > 4) score++;
-                    if (Word.Length > 5) score++;
-                    if (Word.Length > 6) score += 2;
-                    if (Word.Length > 7) score += 6;
+                    SetStatus(Forbidden);
+                    return null;
+                }
+                // Otherwise, if the game state is anything other than "active", responds with response code 409(Conflict).
+                else if (games[gameID].GameState != "active")
+                {
+                    SetStatus(Conflict);
+                    return null;
+                }
+                else
+                {
+                    // Otherwise, records the trimmed Word as being played by UserToken in the game identified by GameID.
+                    // Returns the score for Word in the context of the game(e.g. if Word has been played before the score is zero). 
+                    // Responds with status 200(OK).Note: The word is not case sensitive.
+                    BoggleBoard board = new BoggleBoard(games[gameID].GameBoard);
+                    int score = 0;
 
-                    lock (sync)
+                    // TODO Check if word exists in the dictionary
+                    if (board.CanBeFormed(Word))
                     {
+
+                        if (Word.Length > 2) score++;
+                        if (Word.Length > 4) score++;
+                        if (Word.Length > 5) score++;
+                        if (Word.Length > 6) score += 2;
+                        if (Word.Length > 7) score += 6;
+
                         if (games[gameID].Player1Token == UserToken)
                         {
                             if (games[gameID].Player2WordScores.ContainsKey(Word))
@@ -334,11 +335,11 @@ namespace Boggle
                                 games[gameID].Player2WordScores.Add(Word, score);
                             }
                         }
-                    }                                        
-                }
+                    }
 
-                SetStatus(OK);
-                return score.ToString();
+                    SetStatus(OK);
+                    return score.ToString();
+                }
             }
         }
     }

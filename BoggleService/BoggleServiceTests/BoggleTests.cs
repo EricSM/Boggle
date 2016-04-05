@@ -67,7 +67,7 @@ namespace Boggle
 
         private RestTestClient client = new RestTestClient("http://localhost:60000/");
         //private RestTestClient client = new RestTestClient("http://bogglecs3500s16.azurewebsites.net/");
-
+        
         [TestMethod]
         public void TestCreateUser1()
         {
@@ -144,13 +144,16 @@ namespace Boggle
         {
             string userToken1 = client.DoPostAsync("users", new Username() { Nickname = "john" }).Result.Data;
             Response r1 = client.DoPostAsync("games", new JoinRequest() { UserToken = userToken1, TimeLimit = 30 }).Result;
+            
 
             string userToken2 = client.DoPostAsync("users", new Username(){ Nickname = "smith" }).Result.Data;
             Response r2 = client.DoPostAsync("games", new JoinRequest() { UserToken = userToken2, TimeLimit = 30 }).Result;
+            Debug.WriteLine("test");
+           
+            string gameID = r1.Data.ToString();
+            Response r3 = client.DoPutAsync( new WordPlayed() { UserToken = userToken1, Word = ""}, "games/" + gameID).Result;
 
-
-            string userID = r1.Data.ToString();
-            Response r3 = client.DoPutAsync( new WordPlayed() { UserToken = userToken1, Word = null}, "games/" + userID).Result;
+           
             Assert.AreEqual(Forbidden, r3.Status);
         }
         

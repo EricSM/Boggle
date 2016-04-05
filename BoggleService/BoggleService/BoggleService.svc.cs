@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.ServiceModel.Web;
@@ -11,9 +14,8 @@ namespace Boggle
     {
         private static int gameID = 1;
         private readonly static Dictionary<String, UserInfo> users = new Dictionary<String, UserInfo>();
-        private readonly static Dictionary<int, Game> games = new Dictionary<int, Game> { { gameID, new Game()} };
+        private readonly static Dictionary<int, Game> games = new Dictionary<int, Game> { { gameID, new Game() } };
         private static readonly object sync = new object();
-
 
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
@@ -36,6 +38,28 @@ namespace Boggle
             return File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "index.html");
         }
 
+
+        public string khk()
+        {
+            var connectionString = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
+            string queryString = "SELECT * FROM Users;";
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var command = new SqlCommand(queryString, connection);
+                connection.Open();
+                using (var reader = command.ExecuteReader())
+                {
+                    var outputstuff = "";
+                    while (reader.Read())
+                    {
+                        outputstuff += String.Format("{0}, {1}", reader[0], reader[1]);
+                    }
+                    return outputstuff.ToString();
+                }
+            }
+        }
+
+        
         public void CancelJoin(Token userToken)
         {
             //If UserToken is invalid or is not a player in the pending game, responds with status 403 (Forbidden).
@@ -74,10 +98,11 @@ namespace Boggle
                     userInfo.Nickname = nickname.Nickname;
                     userInfo.UserToken = UserToken;
 
-                    
+
                     users.Add(UserToken, userInfo);
 
                     SetStatus(Created);
+                    
                     return UserToken;
                 }
             }

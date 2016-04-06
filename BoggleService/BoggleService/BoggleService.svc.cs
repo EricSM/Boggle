@@ -12,6 +12,13 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
+        private static string BoggleDB;
+
+        static BoggleService()
+        {
+            BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
+        }
+
         private static int gameID = 1;
         private readonly static Dictionary<String, UserInfo> users = new Dictionary<String, UserInfo>();
         private readonly static Dictionary<int, Game> games = new Dictionary<int, Game> { { gameID, new Game() } };
@@ -40,7 +47,7 @@ namespace Boggle
 
 
        //create sql for Users
- public string khk()
+        public string khk()
         {
             var connectionString = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
             string queryString = "SELECT * FROM Users;";
@@ -119,31 +126,43 @@ namespace Boggle
 
         public string CreateUser(Username nickname)
         {
-            lock (sync)
+            // Check for validity
+            if (nickname.Nickname == null || nickname.Nickname.Trim().Length == 0)
             {
-                // Check for validity
-                if (nickname.Nickname == null || nickname.Nickname.Trim().Length == 0)
+                SetStatus(Forbidden);
+                return null;
+            }
+
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+
+                using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    SetStatus(Forbidden);
-                    return null;
-                }
-                // Add new user and return unique token
-                else
-                {
-                    string UserToken = Guid.NewGuid().ToString();
+                    using (SqlCommand command = new SqlCommand("insert into Users (UserID, Nickname) values(@UserID, @Nickname)", conn, trans))
+                    {
+                        // Add new user and return unique token            
+                        string UserToken = Guid.NewGuid().ToString();
 
-                    UserInfo userInfo = new UserInfo();
-                    userInfo.Nickname = nickname.Nickname;
-                    userInfo.UserToken = UserToken;
+                        //UserInfo userInfo = new UserInfo();
+                        //userInfo.Nickname = nickname.Nickname;
+                        //userInfo.UserToken = UserToken;
+
+                        command.Parameters.AddWithValue("@UserID", UserToken);
+                        command.Parameters.AddWithValue("@Nickname", nickname.Nickname);
 
 
-                    users.Add(UserToken, userInfo);
+                        //users.Add(UserToken, userInfo);
 
-                    SetStatus(Created);
-                    
-                    return UserToken;
+                        command.ExecuteNonQuery();
+                        SetStatus(Created);
+
+                        trans.Commit();
+                        return UserToken;
+                    }
                 }
             }
+            
         }
 
         public GameStatus GetGameStatus(int gameID, string brief)

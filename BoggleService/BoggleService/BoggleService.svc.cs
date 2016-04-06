@@ -39,7 +39,8 @@ namespace Boggle
         }
 
 
-        public string khk()
+       //create sql for Users
+ public string khk()
         {
             var connectionString = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
             string queryString = "SELECT * FROM Users;";
@@ -57,9 +58,46 @@ namespace Boggle
                     return outputstuff.ToString();
                 }
             }
+        }//create sql for Games
+        public string KhG()
+        {
+            var connectionString = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
+            string queryString = "SELECT * FROM Games;";
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var command = new SqlCommand(queryString, connection);
+                connection.Open();
+                using (var reader = command.ExecuteReader())
+                {
+                    var outputstuff = "";
+                    while (reader.Read())
+                    {
+                        outputstuff += String.Format("{0}, {1}", reader[0], reader[1]);
+                    }
+                    return outputstuff.ToString();
+                }
+            }
         }
-
-        
+        //create sql for Words
+        public string MAG()
+        {
+            var connectionString = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
+            string queryString = "SELECT * FROM Words;";
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var command = new SqlCommand(queryString, connection);
+                connection.Open();
+                using (var reader = command.ExecuteReader())
+                {
+                    var outputstuff = "";
+                    while (reader.Read())
+                    {
+                        outputstuff += String.Format("{0}, {1}", reader[0], reader[1]);
+                    }
+                    return outputstuff.ToString();
+                }
+            }
+        }
         public void CancelJoin(Token userToken)
         {
             //If UserToken is invalid or is not a player in the pending game, responds with status 403 (Forbidden).
@@ -295,6 +333,7 @@ namespace Boggle
                 string Word = wordPlayed.Word.ToUpper();
 
                 // If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid,
+                //
                 // or if UserToken is not a player in the game identified by GameID, responds with response code 403 (Forbidden).
                 if (Word == null || Word.Trim() == string.Empty || !users.ContainsKey(UserToken) ||
                     (games[gameID].Player1Token != UserToken && games[gameID].Player2Token != UserToken))
@@ -313,7 +352,7 @@ namespace Boggle
                     // Otherwise, records the trimmed Word as being played by UserToken in the game identified by GameID.
                     // Returns the score for Word in the context of the game(e.g. if Word has been played before the score is zero). 
                     // Responds with status 200(OK).Note: The word is not case sensitive.
-                    BoggleBoard board = new BoggleBoard(games[gameID].GameBoard);
+                   BoggleBoard board = new BoggleBoard(games[gameID].GameBoard);
                     int score = 0;
 
                     // TODO Check if word exists in the dictionary

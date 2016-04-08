@@ -126,23 +126,62 @@ namespace Boggle
         }
         public void CancelJoin(Token userToken)
         {
-
-
-            //If UserToken is invalid or is not a player in the pending game, responds with status 403 (Forbidden).
-            if (userToken.UserToken == null || !users.ContainsKey(userToken.UserToken) || (games[gameID].Player1Token != userToken.UserToken && games[gameID].Player2Token != userToken.UserToken))
+            //If UserToken is invalid, responds with status 403 (Forbidden).
+            if (userToken.UserToken == null)
             {
                 SetStatus(Forbidden);
+                return;
             }
-            else // Otherwise, removes UserToken from the pending game and responds with status 200 (OK).
+
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
-                lock (sync)
+                conn.Open();
+
+                using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    games[gameID].Player1Token = null;
+                    // Check if user exists
+                    using (SqlCommand command = new SqlCommand("select UserID from Users where UserID = @UserID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@UserID", userToken.UserToken);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (!reader.HasRows)
+                            {
+                                SetStatus(Forbidden);
+                                trans.Commit();
+                                return;
+                            }
+                        }
+                    }
+
+                    // Check if UserToken is not a player in the pending game.
+                    using (SqlCommand command = new SqlCommand("select Player1 from Games where GameID = @GameID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", gameID);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            reader.Read();
+
+                            if ((string)reader["Player1"] != userToken.UserToken)
+                            {
+                                SetStatus(Forbidden);
+                                trans.Commit();
+                                return;
+                            }
+                        }
+                    }
+
+
+                    // Otherwise, removes UserToken from the pending game and responds with status 200 (OK).
+                    using (SqlCommand command = new SqlCommand("delete from Games where GameID = @GameID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", gameID);
+                        command.ExecuteNonQuery();
+                        trans.Commit();
+                        SetStatus(OK);
+                    }
                 }
-
-                SetStatus(OK);
             }
-
         }
 
         public string CreateUser(Username nickname)

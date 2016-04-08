@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Dynamic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.ServiceModel.Web;
 using static System.Net.HttpStatusCode;
 
@@ -14,8 +17,9 @@ namespace Boggle
     {
         private static string BoggleDB;
         private static int gameID;
-        //private readonly static Dictionary<String, UserInfo> users = new Dictionary<String, UserInfo>();
-        //private readonly static Dictionary<int, Game> games = new Dictionary<int, Game> { { gameID, new Game() } };
+        private readonly static Dictionary<String, UserInfo> users = new Dictionary<String, UserInfo>();
+        private readonly static Dictionary<int, Game> games = new Dictionary<int, Game> { { gameID, new Game() } };
+        private HashSet<string> dictionary;
         private static readonly object sync = new object();
 
         static BoggleService()
@@ -42,6 +46,29 @@ namespace Boggle
             }
         }
 
+        private HashSet<string> LoadDictionary(string filename)
+        {
+            HashSet<string> set = new HashSet<string>();
+
+            try
+            {
+                using (StreamReader reader = new StreamReader(filename))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        set.Add(line);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Console.Error.WriteLine("Error reading dictionary file.");
+                Environment.Exit(1);
+            }
+
+            return set;
+        }
 
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
@@ -192,7 +219,7 @@ namespace Boggle
                 SetStatus(Forbidden);
                 return null;
             }
-
+           
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
                 conn.Open();
@@ -212,7 +239,12 @@ namespace Boggle
                         SetStatus(Created);
 
                         trans.Commit();
-                        return UserToken;
+
+                        dynamic JSONOutput = new ExpandoObject();
+                        JSONOutput.UserToken = UserToken;
+                        var outputcontent = JsonConvert.SerializeObject(JSONOutput);
+
+                        return outputcontent;
                     }
                 }
             }
@@ -479,10 +511,12 @@ namespace Boggle
                     // Responds with status 200(OK).Note: The word is not case sensitive.
                    BoggleBoard board = new BoggleBoard(games[gameID].GameBoard);
                     int score = 0;
+                    var dictionary = LoadDictionary("dictionary.txt");
 
-                    // TODO Check if word exists in the dictionary
-                    if (board.CanBeFormed(Word))
+                    //Check to see if the word already exists in the dictionary, and if so, do not give any points to the Player
+                    if (board.CanBeFormed(Word) && dictionary.Contains(Word))
                     {
+
 
                         if (Word.Length > 2) score++;
                         if (Word.Length > 4) score++;

@@ -401,7 +401,16 @@ namespace Boggle
                             while (reader.Read())
                             {
                                 player1 = (string)reader["Player1"];
-                                player2 = (string)reader["Player2"];
+                                int index = reader.GetOrdinal("Player2");
+                                if (reader.IsDBNull(index))
+                                {
+                                    player2 = (string)"";
+                                }
+                                else
+                                {
+                                    player2 = (string)reader["Player2"];
+                                }
+
 
                                 // Check if user is already in pending game.
                                 if (player1 == userToken ||  player2 == userToken)
@@ -474,7 +483,12 @@ namespace Boggle
 
                             SetStatus(Accepted);
                             trans.Commit();
-                            return newPendingGameID.ToString();
+
+                            dynamic JSONOutput = new ExpandoObject();
+                            JSONOutput.GameID = newPendingGameID.ToString();
+                            var outputcontent = JsonConvert.SerializeObject(JSONOutput);
+
+                            return outputcontent;
                         }
                     }
                 }

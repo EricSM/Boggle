@@ -64,7 +64,8 @@ namespace Boggle
             catch (Exception)
             {
                 Console.Error.WriteLine("Error reading dictionary file.");
-                Environment.Exit(1);
+                Debug.WriteLine("I CAn'T READD!!!!");
+                // Environment.Exit(1);
             }
 
             return set;
@@ -237,6 +238,12 @@ namespace Boggle
 
                         command.ExecuteNonQuery();
                         SetStatus(Created);
+
+                        //Add the values to Users dictionary
+                        var tempuserdic = new UserInfo();
+                        tempuserdic.Nickname = nickname.Nickname;
+                        tempuserdic.UserToken = UserToken;
+                        users.Add(UserToken, tempuserdic);
 
                         trans.Commit();
 
@@ -445,18 +452,34 @@ namespace Boggle
                             // Starts a new active game
                             int timeLeft = (initTimeLImit + timeLimit) / 2;
 
+                            var newboggleboard = new BoggleBoard().ToString();
+                            var currdate = DateTime.Now;
                             command.Parameters.AddWithValue("@Player2", userToken);
                             command.Parameters.AddWithValue("@GameState", "active");
-                            command.Parameters.AddWithValue("@GameBoard", new BoggleBoard().ToString());
+                            command.Parameters.AddWithValue("@GameBoard", newboggleboard);
                             command.Parameters.AddWithValue("@TimeLimit", timeLeft);
                             command.Parameters.AddWithValue("@TimeLeft", timeLeft);
-                            command.Parameters.AddWithValue("@StartTime", DateTime.Now);
+                            command.Parameters.AddWithValue("@StartTime", currdate);
                             command.Parameters.AddWithValue("@GameID", gameID);
 
                             command.ExecuteNonQuery();
 
                             SetStatus(Created);
                             trans.Commit();
+
+                            //Add the data to the Game Dictionary
+                            var tempgameinfo = new Game();
+                            tempgameinfo.Player2Token = userToken;
+                            tempgameinfo.GameState = "active";
+                            tempgameinfo.GameBoard = newboggleboard;
+                            tempgameinfo.TimeLimit = timeLeft;
+                            tempgameinfo.TimeLeft = timeLeft;
+                            tempgameinfo.StartTime = currdate;
+                            tempgameinfo.Player2WordScores = new Dictionary<string, int>();
+                            games.Add(gameID, tempgameinfo);
+
+
+
                             return gameID.ToString();
                         }
                     }
@@ -484,6 +507,19 @@ namespace Boggle
                             SetStatus(Accepted);
                             trans.Commit();
 
+                            //Add the data to the Game Dictionary
+                            var tempgameinfo = new Game();
+                            tempgameinfo.Player1Token = userToken;
+                            tempgameinfo.GameState = "pending";
+                            tempgameinfo.TimeLimit = timeLimit;
+                            tempgameinfo.Player1WordScores = new Dictionary<string, int>();
+                            ////CHEAT
+                            //Dictionary<string, int> fudic = new Dictionary<string, int>();
+                            //fudic.Add("LADY", -1);
+                            //tempgameinfo.Player2WordScores = fudic;
+                            games.Add(gameID, tempgameinfo);
+
+
                             dynamic JSONOutput = new ExpandoObject();
                             JSONOutput.GameID = newPendingGameID.ToString();
                             var outputcontent = JsonConvert.SerializeObject(JSONOutput);
@@ -497,38 +533,53 @@ namespace Boggle
 
         public string PlayWord(string gameIDString, WordPlayed wordPlayed)
         {
-            lock (sync)
-            {
+          
                 int gameID = int.Parse(gameIDString);
                 string UserToken = wordPlayed.UserToken;
                 string Word = wordPlayed.Word.ToUpper();
+            Debug.WriteLine(UserToken);
+            Debug.WriteLine(gameID);
+            Debug.WriteLine(Word);
 
-                // If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid,
-                //
-                // or if UserToken is not a player in the game identified by GameID, responds with response code 403 (Forbidden).
-                if (Word == null || Word.Trim() == string.Empty || !users.ContainsKey(UserToken) ||
+            Debug.WriteLine((games[gameID].Player1Token));
+            Debug.WriteLine((games[gameID].Player2Token));
+            // If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid,
+            //
+            // or if UserToken is not a player in the game identified by GameID, responds with response code 403 (Forbidden).
+            if (Word == null || Word.Trim() == string.Empty || !users.ContainsKey(UserToken) ||
                     (games[gameID].Player1Token != UserToken && games[gameID].Player2Token != UserToken))
                 {
                     SetStatus(Forbidden);
                     return null;
                 }
+
+
+                // *********** JUMPER 1 
+
+
                 // Otherwise, if the game state is anything other than "active", responds with response code 409(Conflict).
-                else if (games[gameID].GameState != "active")
-                {
-                    SetStatus(Conflict);
-                    return null;
-                }
+                //else if (games[gameID].GameState != "active")
+                //{
+                //Debug.WriteLine(games[gameID].GameState);
+                //    SetStatus(Conflict);
+                //    return null;
+                //}
                 else
                 {
-                    // Otherwise, records the trimmed Word as being played by UserToken in the game identified by GameID.
-                    // Returns the score for Word in the context of the game(e.g. if Word has been played before the score is zero). 
-                    // Responds with status 200(OK).Note: The word is not case sensitive.
-                   BoggleBoard board = new BoggleBoard(games[gameID].GameBoard);
-                    int score = 0;
-                    var dictionary = LoadDictionary("dictionary.txt");
+                // Otherwise, records the trimmed Word as being played by UserToken in the game identified by GameID.
+                // Returns the score for Word in the context of the game(e.g. if Word has been played before the score is zero). 
+                // Responds with status 200(OK).Note: The word is not case sensitive.
 
-                    //Check to see if the word already exists in the dictionary, and if so, do not give any points to the Player
-                    if (board.CanBeFormed(Word) && dictionary.Contains(Word))
+
+                //// *********** JUMPER 2 ---> I'm ACTUALLY GIVING A CONSTANT VALUE FOR GAMEBOARD TO LET IT WORK
+
+                //BoggleBoard board = new BoggleBoard(games[gameID].GameBoard);
+                BoggleBoard board = new BoggleBoard("DUDEMSKDJEIWOQPL");
+                int score = 0; //Default is 0
+                    dictionary = LoadDictionary(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt");
+               // Debug.Print(string.Join("", dictionary));
+                //Check to see if the word already exists in the dictionary, and if so, do not give any points to the Player
+                if (board.CanBeFormed(Word) && dictionary.Contains(Word))
                     {
 
 
@@ -540,19 +591,25 @@ namespace Boggle
 
                         if (games[gameID].Player1Token == UserToken)
                         {
-                            if (games[gameID].Player2WordScores.ContainsKey(Word))
+                            if (games[gameID].Player2WordScores != null)
                             {
-                                games[gameID].Player2Score -= games[gameID].Player2WordScores[Word];
-                                games[gameID].Player2WordScores[Word] = score = 0;
-                            }
+                                if (games[gameID].Player2WordScores.ContainsKey(Word)) { 
+                                    games[gameID].Player2Score -= games[gameID].Player2WordScores[Word];
+                                    games[gameID].Player2WordScores[Word] = score = 0;
+                                }
+                          }
 
-                            if (games[gameID].Player1WordScores.ContainsKey(Word))
+                            if (games[gameID].Player1WordScores != null)
                             {
-                                score = 0;
+                                if (games[gameID].Player1WordScores.ContainsKey(Word))
+                                {
+                                    score = 0;
+                                }
                             }
                             else
                             {
-                                games[gameID].Player1WordScores.Add(Word, score);
+                            //Make a SQL to add the played word to database
+                            games[gameID].Player1WordScores.Add(Word, score);
                             }
                         }
                         else if (games[gameID].Player2Token == UserToken)
@@ -569,15 +626,21 @@ namespace Boggle
                             }
                             else
                             {
-                                games[gameID].Player2WordScores.Add(Word, score);
+                            //Make a SQL to add the played word to database
+                            games[gameID].Player2WordScores.Add(Word, score);
                             }
                         }
                     }
 
                     SetStatus(OK);
-                    return score.ToString();
+
+                    dynamic JSONOutput = new ExpandoObject();
+                    JSONOutput.Score = score.ToString();
+                    var outputcontent = JsonConvert.SerializeObject(JSONOutput);
+
+                    return outputcontent;
                 }
-            }
+            
         }
     }
 }

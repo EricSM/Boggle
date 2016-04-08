@@ -14,15 +14,32 @@ namespace Boggle
     {
         private static string BoggleDB;
         private static int gameID;
-        private readonly static Dictionary<String, UserInfo> users = new Dictionary<String, UserInfo>();
-        private readonly static Dictionary<int, Game> games = new Dictionary<int, Game> { { gameID, new Game() } };
+        //private readonly static Dictionary<String, UserInfo> users = new Dictionary<String, UserInfo>();
+        //private readonly static Dictionary<int, Game> games = new Dictionary<int, Game> { { gameID, new Game() } };
         private static readonly object sync = new object();
 
         static BoggleService()
         {
-
-            gameID = 1; // TODO get pending game id from database
             BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
+            
+            // Retrieve GameID for pending game.
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    using (SqlCommand command = new SqlCommand("select GameID from Games order by GameID desc", conn, trans))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            reader.Read();
+                            gameID = (int)reader["GameID"];
+                        }
+                        trans.Commit();
+                    }
+                }
+            }
         }
 
 
@@ -109,6 +126,8 @@ namespace Boggle
         }
         public void CancelJoin(Token userToken)
         {
+
+
             //If UserToken is invalid or is not a player in the pending game, responds with status 403 (Forbidden).
             if (userToken.UserToken == null || !users.ContainsKey(userToken.UserToken) || (games[gameID].Player1Token != userToken.UserToken && games[gameID].Player2Token != userToken.UserToken))
             {
@@ -145,16 +164,10 @@ namespace Boggle
                     {
                         // Add new user and return unique token            
                         string UserToken = Guid.NewGuid().ToString();
-
-                        //UserInfo userInfo = new UserInfo();
-                        //userInfo.Nickname = nickname.Nickname;
-                        //userInfo.UserToken = UserToken;
-
+                        
                         command.Parameters.AddWithValue("@UserID", UserToken);
                         command.Parameters.AddWithValue("@Nickname", nickname.Nickname);
 
-
-                        //users.Add(UserToken, userInfo);
 
                         command.ExecuteNonQuery();
                         SetStatus(Created);
@@ -360,6 +373,8 @@ namespace Boggle
                             command.Parameters.AddWithValue("@StartTime", DateTime.Now);
                             command.Parameters.AddWithValue("@GameID", gameID);
 
+                            command.ExecuteNonQuery();
+
                             SetStatus(Created);
                             trans.Commit();
                             return gameID.ToString();
@@ -375,28 +390,24 @@ namespace Boggle
                             command.Parameters.AddWithValue("@Player1", userToken);
                             command.Parameters.AddWithValue("@GameState", "pending");
                             command.Parameters.AddWithValue("@TimeLimit", timeLimit);
-                            gameID++;
+
+                            command.ExecuteNonQuery();
+
+                            int newPendingGameID;
+
+                            lock (sync)
+                            {
+                                gameID++;
+                                newPendingGameID = gameID;
+                            }
 
                             SetStatus(Accepted);
                             trans.Commit();
-                            return gameID.ToString();
+                            return newPendingGameID.ToString();
                         }
                     }
                 }
             }
-        }
-
-        private void StartPendingGame(int timeLimit)
-        {
-            // Starts a new active game
-            //int timeLeft = (games[gameID].TimeLimit + timeLimit) / 2;
-            //games[gameID].GameState = "active";
-            //games[gameID].GameBoard = new BoggleBoard().ToString();
-            //games[gameID].TimeLimit = timeLeft;
-            //games[gameID].TimeLeft = timeLeft;
-            //games[gameID].StartTime = DateTime.Now;
-            //gameID++;
-            //games.Add(gameID, new Game());
         }
 
         public string PlayWord(string gameIDString, WordPlayed wordPlayed)

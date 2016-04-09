@@ -16,9 +16,6 @@ namespace Boggle
         
         [WebInvoke(Method = "PUT", UriTemplate = "/games")]
         void CancelJoin(Token userToken);
-        
-        [WebInvoke(Method = "GET", UriTemplate = "/khk")]
-        string khk();
 
         [WebInvoke(Method = "PUT", UriTemplate = "/games/{gameID}")]
         string PlayWord(string gameID, WordPlayed wordPlayed);

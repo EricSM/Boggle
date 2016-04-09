@@ -33,13 +33,13 @@ namespace Boggle
 
         public int TimeLeft { get; set; }
 
-        public int Player1Score { get; set; }
+        //public int Player1Score { get; set; }
 
-        public int Player2Score { get; set; }
+        //public int Player2Score { get; set; }
 
-        public Dictionary<string, int> Player1WordScores { get; set; }
+        //public Dictionary<string, int> Player1WordScores { get; set; }
 
-        public Dictionary<string, int> Player2WordScores { get; set; }
+        //public Dictionary<string, int> Player2WordScores { get; set; }
     }
     
     public class Username
@@ -105,7 +105,7 @@ namespace Boggle
         public int Score { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public HashSet<WordScore> WordsPlayed { get; set; }
+        public List<WordScore> WordsPlayed { get; set; }
     }
 
     /// <summary>

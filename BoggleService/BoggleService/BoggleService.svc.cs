@@ -565,7 +565,6 @@ namespace Boggle
             int gameID = int.Parse(gameIDString);
             string userToken = wordPlayed.UserToken;
             string word = wordPlayed.Word.ToUpper();
-            string player = "Player1";
             BoggleBoard board = new BoggleBoard();
             string gameState;
 
@@ -619,13 +618,10 @@ namespace Boggle
                             {
                                 reader.Read();
 
-                                if ((string)reader["Player1"] == userToken)
+                                if ((string)reader["Player1"] == userToken || (string)reader["Player2"] == userToken)
                                 {
-                                    player = "Player1";
-                                }
-                                else if ((string)reader["Player2"] == userToken)
-                                {
-                                    player = "Player2";
+                                    board = new BoggleBoard((string)reader["Board"]);
+                                    gameState = (string)reader["GameState"];
                                 }
                                 else //if UserToken is not a player in the game identified by GameID
                                 {
@@ -633,9 +629,6 @@ namespace Boggle
                                     trans.Commit();
                                     return null;
                                 }
-
-                                board = new BoggleBoard((string)reader["Board"]);
-                                gameState = (string)reader["GameState"];
                             }
                         }
 
@@ -665,77 +658,45 @@ namespace Boggle
                     // board = new BoggleBoard("DUDEMSKDJEIWOQPL");
 
                     int score = 0; //Default is 0
-                    
+
                     // Debug.Print(string.Join("", dictionary));
 
 
+                    var wordsPlayed = new List<string>();
+                    // Retrieve all words user played this game
+                    using (SqlCommand command = new SqlCommand("select Word from Words where GameID = @GameID and Player = @Player", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", gameID);
+                        command.Parameters.AddWithValue("@Player", userToken);
 
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                wordsPlayed.Add((string)reader["Word"]);
+                            }
+                        }
+                    }
 
-
-
-
-
-
-                    //Check to see if the word already exists in the dictionary, and if not, do not give any points to the Player
+                    
                     //if string is less than 3 letters
                     if (word.Length < 3)
                     {
                         score = 0;
                     }
-                    //else if string has a duplicate
-                    //else
+                    //else if word was already played
+                    else if (wordsPlayed.Contains(word))
+                    {
+                        score = 0;
+                    }
+                    //else if the word already exists in the dictionary and can be formed in the board
                     else if (board.CanBeFormed(word) && dictionary.Contains(word))
                     {
-
-
                         if (word.Length > 2) score++;
                         if (word.Length > 4) score++;
                         if (word.Length > 5) score++;
                         if (word.Length > 6) score += 2;
-                        if (word.Length > 7) score += 6;
-
-
-
-                        //if (games[gameID].Player1Token == userToken)
-                        //{
-                        //    if (games[gameID].Player2WordScores != null)
-                        //    {
-                        //        if (games[gameID].Player2WordScores.ContainsKey(word))
-                        //        {
-                        //            games[gameID].Player2WordScores[word] = score = 0;
-                        //        }
-                        //    }
-
-                        //    if (games[gameID].Player1WordScores != null)
-                        //    {
-                        //        if (games[gameID].Player1WordScores.ContainsKey(word))
-                        //        {
-                        //            score = 0;
-                        //        }
-                        //    }
-                        //    else
-                        //    {
-                        //        //Make a SQL to add the played word to database
-                        //        games[gameID].Player1WordScores.Add(word, score);
-                        //    }
-                        //}
-                        //else if (games[gameID].Player2Token == userToken)
-                        //{
-                        //    if (games[gameID].Player1WordScores.ContainsKey(word))
-                        //    {
-                        //        games[gameID].Player1WordScores[word] = score = 0;
-                        //    }
-
-                        //    if (games[gameID].Player2WordScores.ContainsKey(word))
-                        //    {
-                        //        score = 0;
-                        //    }
-                        //    else
-                        //    {
-                        //        //Make a SQL to add the played word to database
-                        //        games[gameID].Player2WordScores.Add(word, score);
-                        //    }
-                        //}
+                        if (word.Length > 7) score += 6;                        
                     }
                     else
                     {
@@ -743,16 +704,24 @@ namespace Boggle
                     }
 
 
+                    using (SqlCommand command = new SqlCommand("insert into Words (Word, GameID, Player, Score) values(@Word, @GameID, @Player, @Score)", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@Word", word);
+                        command.Parameters.AddWithValue("@GameID", gameID);
+                        command.Parameters.AddWithValue("@Player", userToken);
+                        command.Parameters.AddWithValue("@Score", score);
 
+                        command.ExecuteNonQuery();
+                        
 
+                        dynamic JSONOutput = new ExpandoObject();
+                        JSONOutput.Score = score.ToString();
+                        var outputcontent = JsonConvert.SerializeObject(JSONOutput);
 
-                    SetStatus(OK);
-
-                    dynamic JSONOutput = new ExpandoObject();
-                    JSONOutput.Score = score.ToString();
-                    var outputcontent = JsonConvert.SerializeObject(JSONOutput);
-
-                    return outputcontent;
+                        SetStatus(OK);
+                        trans.Commit();
+                        return outputcontent;
+                    }                                        
                 }
             }
         }

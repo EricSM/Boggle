@@ -1,6 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+
+// PS10 
+// Meysam Hamel && Eric Miramontes
+
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -30,8 +34,10 @@ namespace Boggle
             // Retrieve GameID for most recent game.
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
+                // Open a connection
                 conn.Open();
 
+                //Represents a Transact-SQL transaction to be made in a SQL Server database
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     using (SqlCommand command = new SqlCommand("select GameID from Games order by GameID desc", conn, trans))
@@ -46,7 +52,7 @@ namespace Boggle
                 }
             }
         }
-
+        //use load dictioary to read file name 
         private static HashSet<string> LoadDictionary(string filename)
         {
             HashSet<string> set = new HashSet<string>();
@@ -105,8 +111,10 @@ namespace Boggle
 
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
+                // Open a connection
                 conn.Open();
 
+                //Represents a Transact-SQL transaction to be made in a SQL Server database
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     // Check if user exists
@@ -153,7 +161,7 @@ namespace Boggle
                 }
             }
         }
-
+        // create user 
         public string CreateUser(Username nickname)
         {
             // Check for validity
@@ -162,13 +170,16 @@ namespace Boggle
                 SetStatus(Forbidden);
                 return null;
             }
-
+            // Connect to the DB
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
+               // Open a connection
                 conn.Open();
 
+                //Represents a Transact-SQL transaction to be made in a SQL Server database
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
+                    //insert userID
                     using (SqlCommand command = new SqlCommand("insert into Users (UserID, Nickname) values(@UserID, @Nickname)", conn, trans))
                     {
                         // Add new user and return unique token            
@@ -177,7 +188,7 @@ namespace Boggle
                         command.Parameters.AddWithValue("@UserID", UserToken);
                         command.Parameters.AddWithValue("@Nickname", nickname.Nickname);
 
-
+                        //gainst the connection and returns the number of rows affected
                         command.ExecuteNonQuery();
                         SetStatus(Created);
 
@@ -199,7 +210,7 @@ namespace Boggle
             }
 
         }
-
+        //Iformation about the game named by GameID
         public GameStatus GetGameStatus(int gameID, string brief)
         {
             Game thisGame;
@@ -209,17 +220,23 @@ namespace Boggle
             var Player2Words = new List<WordScore>();
             GameStatus status = new GameStatus();
 
+            // connect to DB
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
-
+               // Open a connection
                 conn.Open();
+
+                //Represents a Transact-SQL transaction to be made in a SQL Server database
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
 
-
+                    // Create a command
                     using (SqlCommand command = new SqlCommand("select * from Games where GameID = @GameID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@GameID", gameID);
+
+                        // Execute the command and cycle through the DataReader object
+
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (!reader.HasRows)// Checks if gameID is valid
@@ -265,6 +282,7 @@ namespace Boggle
                             Player1 = (string)reader["Nickname"];
                         }
                     }
+                    // Retrieve usernames of players
                     using (SqlCommand command = new SqlCommand("select Nickname from Users where UserID = @UserID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", thisGame.Player2Token);
@@ -407,8 +425,9 @@ namespace Boggle
 
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
-
+                // Open a connection
                 conn.Open();
+                //Represents a Transact-SQL transaction to be made in a SQL Server database
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
 
@@ -566,6 +585,7 @@ namespace Boggle
             string userToken = wordPlayed.UserToken;
             string word = wordPlayed.Word.ToUpper();
             BoggleBoard board = new BoggleBoard();
+            //string player = "Player1";
             string gameState;
 
             //Debug.WriteLine(userToken);
@@ -574,7 +594,9 @@ namespace Boggle
 
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
+                // Open a connection
                 conn.Open();
+                //Represents a Transact-SQL transaction to be made in a SQL Server database
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     // If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid,
@@ -607,8 +629,10 @@ namespace Boggle
                         command.Parameters.AddWithValue("@GameID", gameID);
 
                         using (SqlDataReader reader = command.ExecuteReader())
+
                         {
-                            if (!reader.HasRows)// if GameID is missing or invalid
+                            // if GameID is missing or invalid
+                            if (!reader.HasRows)
                             {
                                 SetStatus(Forbidden);
                                 trans.Commit();
@@ -621,6 +645,7 @@ namespace Boggle
                                 if ((string)reader["Player1"] == userToken || (string)reader["Player2"] == userToken)
                                 {
                                     board = new BoggleBoard((string)reader["Board"]);
+
                                     gameState = (string)reader["GameState"];
                                 }
                                 else //if UserToken is not a player in the game identified by GameID

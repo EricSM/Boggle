@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿// PS10 
+// Meysam Hamel && Eric Miramontes
+// CS 3500
+
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-
-// PS10 
-// Meysam Hamel && Eric Miramontes
-
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -498,7 +498,7 @@ namespace Boggle
                             }
                         }
 
-                        using (SqlCommand command = new SqlCommand("update Games set Player2 = @Player2, GameState = @GameState, GameBoard = @GameBoard, TimeLimit = @TimeLimit, TimeLeft = @TimeLeft, StartTime = @StartTime where GameID = @GameID", conn, trans))
+                        using (SqlCommand command = new SqlCommand("update Games set Player2 = @Player2, GameState = @GameState, Board = @GameBoard, TimeLimit = @TimeLimit, TimeLeft = @TimeLeft, StartTime = @StartTime where GameID = @GameID", conn, trans))
                         {
                             // Starts a new active game
                             int timeLeft = (initTimeLImit + timeLimit) / 2;
@@ -512,6 +512,10 @@ namespace Boggle
                             command.Parameters.AddWithValue("@TimeLeft", timeLeft);
                             command.Parameters.AddWithValue("@StartTime", currdate);
                             command.Parameters.AddWithValue("@GameID", pendingGameID);
+
+                            Debug.WriteLine(newboggleboard);
+
+                            Debug.WriteLine(command.CommandText);
 
                             command.ExecuteNonQuery();
 
@@ -638,13 +642,29 @@ namespace Boggle
                                 trans.Commit();
                                 return null;
                             }
+
                             else
                             {
                                 reader.Read();
 
                                 if ((string)reader["Player1"] == userToken || (string)reader["Player2"] == userToken)
                                 {
-                                    board = new BoggleBoard((string)reader["Board"]);
+                                    //Player 1 has only joined, when player 2 joins is only when we get a board
+                                    //Check to see if the Board value is null in database
+                                    int index = reader.GetOrdinal("Board");
+                                    if (reader.IsDBNull(index))
+                                    {
+                                        //Board is null because only player 1 has joined
+                                        //Return error that it's pending ********* Check to see if this is what we should give
+
+                                        SetStatus(OK);
+                                        return null;
+                                    }
+                                    else
+                                    {
+                                        board = new BoggleBoard((string)reader["Board"]);
+                                    }
+
 
                                     gameState = (string)reader["GameState"];
                                 }

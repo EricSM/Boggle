@@ -487,6 +487,7 @@ namespace Boggle
 
                         using (SqlCommand command = new SqlCommand("select TimeLimit from Games where GameID = @GameID", conn, trans))
                         {
+                            command.Parameters.AddWithValue("@GameID", pendingGameID);
                             using (SqlDataReader reader = command.ExecuteReader())
                             {
                                 while (reader.Read())
@@ -519,10 +520,13 @@ namespace Boggle
 
                             SetStatus(Created);
                             trans.Commit();
-                            
 
 
-                            return pendingGameID.ToString();
+                            dynamic JSONOutput = new ExpandoObject();
+                            JSONOutput.GameID = pendingGameID.ToString();
+                            var outputcontent = JsonConvert.SerializeObject(JSONOutput);
+
+                            return outputcontent;
                         }
                     }
 
@@ -635,8 +639,8 @@ namespace Boggle
                                 {
                                     //Player 1 has only joined, when player 2 joins is only when we get a board
                                     //Check to see if the Board value is null in database
-                                    int index = reader.GetOrdinal("Board");
-                                    if (reader.IsDBNull(index))
+                                    int index2 = reader.GetOrdinal("Board");
+                                    if (reader.IsDBNull(index2))
                                     {
                                         //Board is null because only player 1 has joined
                                         //Return error that it's pending ********* Check to see if this is what we should give

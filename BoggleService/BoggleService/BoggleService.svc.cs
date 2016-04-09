@@ -21,8 +21,6 @@ namespace Boggle
     {
         private static string BoggleDB;
         private static int pendingGameID;
-        //private readonly static Dictionary<String, UserInfo> users = new Dictionary<String, UserInfo>();
-        //private readonly static Dictionary<int, Game> games = new Dictionary<int, Game> { { gameID, new Game() } };
         private static HashSet<string> dictionary;
         private static readonly object sync = new object();
 
@@ -483,7 +481,7 @@ namespace Boggle
 
 
                     // If player 1 is taken, user is player 2
-                    if (player1 != null && player2 == null)
+                    if (player1 != null && player2 == string.Empty)
                     {
                         int initTimeLImit = 0;
 
@@ -521,18 +519,7 @@ namespace Boggle
 
                             SetStatus(Created);
                             trans.Commit();
-
-                            //Add the data to the Game Dictionary
-                            //var tempgameinfo = new Game();
-                            //tempgameinfo.Player2Token = userToken;
-                            //tempgameinfo.GameState = "active";
-                            //tempgameinfo.GameBoard = newboggleboard;
-                            //tempgameinfo.TimeLimit = timeLeft;
-                            //tempgameinfo.TimeLeft = timeLeft;
-                            //tempgameinfo.StartTime = currdate;
-                            //tempgameinfo.Player2WordScores = new Dictionary<string, int>();
-                            //games.Add(gameID, tempgameinfo);
-
+                            
 
 
                             return pendingGameID.ToString();
@@ -558,18 +545,6 @@ namespace Boggle
                             SetStatus(Accepted);
                             trans.Commit();
 
-                            //Add the data to the Game Dictionary
-                            //var tempgameinfo = new Game();
-                            //tempgameinfo.Player1Token = userToken;
-                            //tempgameinfo.GameState = "pending";
-                            //tempgameinfo.TimeLimit = timeLimit;
-                            //tempgameinfo.Player1WordScores = new Dictionary<string, int>();
-                            ////CHEAT
-                            //Dictionary<string, int> fudic = new Dictionary<string, int>();
-                            //fudic.Add("LADY", -1);
-                            //tempgameinfo.Player2WordScores = fudic;
-                            //games.Add(gameID, tempgameinfo);
-
 
                             dynamic JSONOutput = new ExpandoObject();
                             JSONOutput.GameID = pendingGameID.ToString();
@@ -589,7 +564,6 @@ namespace Boggle
             string userToken = wordPlayed.UserToken;
             string word = wordPlayed.Word.ToUpper();
             BoggleBoard board = new BoggleBoard();
-            //string player = "Player1";
             string gameState;
 
             //Debug.WriteLine(userToken);
@@ -647,6 +621,16 @@ namespace Boggle
                             {
                                 reader.Read();
 
+                                int index = reader.GetOrdinal("GameState");
+                                if (reader.IsDBNull(index))
+                                {
+                                    gameState = (string)"";
+                                }
+                                else
+                                {
+                                    gameState = (string)reader["GameState"];
+                                }
+
                                 if ((string)reader["Player1"] == userToken || (string)reader["Player2"] == userToken)
                                 {
                                     //Player 1 has only joined, when player 2 joins is only when we get a board
@@ -666,7 +650,7 @@ namespace Boggle
                                     }
 
 
-                                    gameState = (string)reader["GameState"];
+                                    //gameState = (string)reader["GameState"];
                                 }
                                 else //if UserToken is not a player in the game identified by GameID
                                 {

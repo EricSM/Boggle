@@ -3,6 +3,7 @@
 // CS 3500
 
 using Newtonsoft.Json;
+using System.Net.Http;
 using System;
 using System.Collections.Generic;
 using System.Configuration;

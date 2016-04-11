@@ -79,7 +79,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\Net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\..\..\..\AppData\Local\Temp\Temporary ASP.NET Files\vs\5057d5f4\1a41d557\assembly\dl3\9d6acb83\c8d82ed5_0c92d101\Newtonsoft.Json.DLL</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="StringSocket">

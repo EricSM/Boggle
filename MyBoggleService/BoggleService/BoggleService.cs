@@ -27,7 +27,7 @@ namespace Boggle
         static BoggleService()
         {
             BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
-            dictionary = LoadDictionary(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt");
+            dictionary = LoadDictionary(AppDomain.CurrentDomain.BaseDirectory + @"..\dictionary.txt");
 
             // Retrieve GameID for most recent game.
             using (SqlConnection conn = new SqlConnection(BoggleDB))
@@ -171,7 +171,7 @@ namespace Boggle
             // Connect to the DB
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
-               // Open a connection
+                // Open a connection
                 conn.Open();
 
                 //Represents a Transact-SQL transaction to be made in a SQL Server database
@@ -221,7 +221,7 @@ namespace Boggle
             // connect to DB
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
-               // Open a connection
+                // Open a connection
                 conn.Open();
 
                 //Represents a Transact-SQL transaction to be made in a SQL Server database
@@ -605,7 +605,7 @@ namespace Boggle
                         }
 
                     }
-                    
+
                     using (SqlCommand command = new SqlCommand("select Player1, Player2, Board, GameState from Games where GameID = @GameID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@GameID", gameID);
@@ -711,7 +711,7 @@ namespace Boggle
                         }
                     }
 
-                    
+
                     //if string is less than 3 letters
                     if (word.Length < 3)
                     {
@@ -729,7 +729,7 @@ namespace Boggle
                         if (word.Length > 4) score++;
                         if (word.Length > 5) score++;
                         if (word.Length > 6) score += 2;
-                        if (word.Length > 7) score += 6;                        
+                        if (word.Length > 7) score += 6;
                     }
                     else
                     {
@@ -745,7 +745,7 @@ namespace Boggle
                         command.Parameters.AddWithValue("@Score", score);
 
                         command.ExecuteNonQuery();
-                        
+
 
                         dynamic JSONOutput = new ExpandoObject();
                         JSONOutput.Score = score.ToString();
@@ -754,7 +754,7 @@ namespace Boggle
                         SetStatus(OK);
                         trans.Commit();
                         return outputcontent;
-                    }                                        
+                    }
                 }
             }
         }

@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.ServiceModel.Web;
 using static System.Net.HttpStatusCode;
 

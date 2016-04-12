@@ -140,7 +140,7 @@ namespace Boggle
                     //API Homepage Requested
                     Console.WriteLine("** Homepage Requested");
                     ////string result = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "index.html");
-                    string result = "<HTML>FUCK YOU</HTML>";
+                    string result = "<HTML>Blahblah</HTML>";
 
                     ss.BeginSend("HTTP/1.1 200 OK\n", Ignore, null);
                     ss.BeginSend("Content-Type: text/html\n", Ignore, null);

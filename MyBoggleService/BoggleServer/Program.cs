@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,6 +10,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace BoggleServer
 {
@@ -16,11 +18,13 @@ namespace BoggleServer
     public class BoggleServer
     {
         //Define variables
+        private static string BoggleDB;
         private int timeLimit;
         private HashSet<String> dictionary;
         private String initialBoardSetup;
         private TcpListener server;
         private Player waitingForGame;
+        private static int pendingGameID;
         private readonly Object lockOnWaiting = new Object(); //For pending purposes
         private static string dictionarypath = AppDomain.CurrentDomain.BaseDirectory + @"dictionary.txt"; //Dictionary path
 
@@ -54,6 +58,28 @@ namespace BoggleServer
 
             //Start the server
             new BoggleServer(60000);
+
+            //Retrieve GameID for the most recent game
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                // Open a connection
+                conn.Open();
+
+                //Represents a Transact-SQL transaction to be made in a SQL Server database
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    using (SqlCommand command = new SqlCommand("select GameID from Games order by GameID desc", conn, trans))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            reader.Read();
+                            pendingGameID = (int)reader["GameID"];
+                        }
+                        trans.Commit();
+                    }
+                }
+            }
+
 
             Console.Read();
         }
@@ -159,33 +185,27 @@ namespace BoggleServer
                     Regex r = new Regex(@"^(\S+)\s+(\S+)");
                     Match m = r.Match(s);
                     method = m.Groups[1].Value;
-                    URL = m.Groups[2].Value;
+                    URL = m.Groups[2].Value.ToLower();
                     Console.WriteLine("Method: " + m.Groups[1].Value);
                     Console.WriteLine("URL: " + m.Groups[2].Value);
                 }
+
                 if (s.StartsWith("Content-Length:"))
                 {
-                    if(method == "GET")
-                    {
-                        contentLength = 10;
-                    }
-                    else
-                    {
-                        contentLength = Int32.Parse(s.Substring(16).Trim());
-                    }
+
+                    contentLength = Int32.Parse(s.Substring(16).Trim());
                     
                 }
 
-                //Problem is that GET doesn't have an \r at the end. Why? Because it doesn't have any data!
-                //But you haven't written any method to utilize get.
-                Console.WriteLine("Current S: " + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(s)));
+               
                 if (s == "\r")
                 {
-                    Console.WriteLine("YES");
+                    //If the method is GET, don't even bother reading any user input; there isn't any!
                     if(method == "GET")
                     {
                         ContentReceived(URL, null, null);
                     }
+                    //Other methods like POST do have user input, so catch them.
                     else
                     {
                         ss.BeginReceive(ContentReceived, null, contentLength);
@@ -195,16 +215,155 @@ namespace BoggleServer
                 else
                 {
                     ss.BeginReceive(LineReceived, null);
-                    //For some unknown reason, GET requests will end up looping over here. Find out why!
                 }
             }
         }
 
         private void ContentReceived(string s, Exception e, object payload)
         {
-            Console.WriteLine("Start of ContentReceived");
+            //If any S is given --> regardless of GET or POST the S will be provided but sometimes it's empty
             if (s != null)
             {
+
+
+                //Controller --> Determines what functions have be loaded given certain user requests and methods
+
+                //Create a default result, which contains an error stating none of the following conditions matched
+                string result;
+
+                //Regex for /games/{GameID} - Playword
+                Regex PW = new Regex(@"^\/games\/[0-9]+$");
+
+                //Regex for /games/{GameID} - Playword
+                Regex GR = new Regex(@"^\/games\/[0-9]+(\?brief=yes)?$");
+                //API Homepage
+                if (method == "GET" && URL == "/")
+                {
+
+                    result = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "index.html");
+                    ss.BeginSend("HTTP/1.1 200 OK\n", Ignore, null);
+                    ss.BeginSend("Content-Type: text/html\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("\r\n", Ignore, null);
+                    ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
+
+
+                
+                }
+                //Create User
+                else if (method == "POST" && URL == "/users"){
+
+                    //Run the Create User Function
+
+
+                    //Display Results
+                    result = "{\"UserToken\":\"9eb536af-50a1-476f-856e-ffff8f1b25d2\"}"; //This is supposed to be the JSON output from the function
+                    ss.BeginSend("HTTP/1.1 201 OK\n", Ignore, null);
+                    ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("\r\n", Ignore, null);
+                    ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
+                   
+                }
+                //JoinGame
+                else if (method == "POST" && URL == "/games"){
+
+                    //Run the Join Game Function
+
+
+                    
+                    result = "{\"UserToken\":\"9eb536af-50a1-476f-856e-ffff8f1b25d2\"}"; //This is supposed to be the JSON output from the function
+                    ss.BeginSend("HTTP/1.1 201 OK\n", Ignore, null);
+                    ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("\r\n", Ignore, null);
+                    ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
+                   
+                }
+                //CancelJoin
+                else if (method == "PUT" && URL == "/games")
+                {
+
+                    //Run the Cancel Join Function
+
+
+
+                    result = "{\"UserToken\":\"9eb536af-50a1-476f-856e-ffff8f1b25d2\"}"; //This is supposed to be the JSON output from the function
+                    ss.BeginSend("HTTP/1.1 201 OK\n", Ignore, null);
+                    ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("\r\n", Ignore, null);
+                    ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
+
+                }
+                //PlayWord
+                else if (method == "PUT" && PW.IsMatch(URL))
+                {
+
+                    //Run the Play Word Function
+
+
+
+                    result = "{\"UserToken\":\"9eb536af-50a1-476f-856e-ffff8f1b25d2\"}"; //This is supposed to be the JSON output from the function
+                    ss.BeginSend("HTTP/1.1 201 OK\n", Ignore, null);
+                    ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("\r\n", Ignore, null);
+                    ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
+
+                }
+                //GameStatus
+                else if (method == "GET" && GR.IsMatch(URL))
+                {
+                    //Check to see if brief=yes is provided
+                    bool brief = false;
+
+                    var BR = new Regex(@"^\/games\/[0-9]+(\?brief=yes)$");
+
+                    if (BR.IsMatch(URL))
+                    {
+                        brief = true;
+                    }
+
+                    Console.WriteLine(brief);
+                    
+                    //Run the Game Status Function [we supply the brief also]
+
+
+
+                    result = "{\"UserToken\":\"9eb536af-50a1-476f-856e-ffff8f1b25d2\"}"; //This is supposed to be the JSON output from the function
+                    ss.BeginSend("HTTP/1.1 201 OK\n", Ignore, null);
+                    ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("\r\n", Ignore, null);
+                    ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
+
+                }
+                //Nothing matched, throw an error
+                else { 
+                    result = "<B>Error: no method matched. Result was unchanged. Sorry bro :(</B>";
+                    ss.BeginSend("HTTP/1.1 400 BAD REQUEST\n", Ignore, null);
+                    ss.BeginSend("Content-Type: text/html\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("\r\n", Ignore, null);
+                    ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 //Any request other than GET is processed here
 
                 // Call service method
@@ -213,7 +372,9 @@ namespace BoggleServer
                 //    JsonConvert.SerializeObject(
                 //            new Player { Name = "June", Score = 5 },
                 //            new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-                string result = "<font size='50'>One Small Step for a Man</font>";
+                //string result = "<font size='50'>One Small Step for a Man</font><BR><BR>I received input as: " +s;
+
+
                 ss.BeginSend("HTTP/1.1 200 OK\n", Ignore, null);
                 ss.BeginSend("Content-Type: text/html\n", Ignore, null);
                 ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
@@ -221,17 +382,6 @@ namespace BoggleServer
                 ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
 
             }
-            else
-            {
-                //GET requests don't have any input by user, so s will be null, but it's still ok
-                string result = "123";
-                ss.BeginSend("HTTP/1.1 200 OK\n", Ignore, null);
-                ss.BeginSend("Content-Type: text/plain\n", Ignore, null);
-                ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
-                ss.BeginSend("\r\n", Ignore, null);
-                ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
-            }
-
         }
 
         private void Ignore(Exception e, object payload)

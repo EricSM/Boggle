@@ -23,7 +23,8 @@ namespace Boggle
         private static int pendingGameID;
         private static HashSet<string> dictionary;
         private static readonly object sync = new object();
-
+        public static string contenttype = "";
+        public static string statuscode = "";
         static BoggleService()
         {
             BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
@@ -83,7 +84,9 @@ namespace Boggle
         /// <param name="status"></param>
         private static void SetStatus(HttpStatusCode status)
         {
-            WebOperationContext.Current.OutgoingResponse.StatusCode = status;
+            //WebOperationContext.Current.OutgoingResponse.StatusCode = status;
+            int statuscodenumber = (int)status;
+            statuscode = statuscodenumber + " " + status.ToString().ToUpper();
         }
 
         /// <summary>
@@ -208,6 +211,17 @@ namespace Boggle
             }
 
         }
+
+        public string GetStatusCode()
+        {
+            return statuscode;
+        }
+
+        public string GetContentType()
+        {
+            return contenttype;
+        }
+
         //Iformation about the game named by GameID
         public GameStatus GetGameStatus(int gameID, string brief)
         {
@@ -295,7 +309,7 @@ namespace Boggle
                     // Retrieve scores and words played for players 1 and 2
                     using (SqlCommand command = new SqlCommand("select Word, Score from Words where GameID = @GameID and Player = @Player", conn, trans))
                     {
-                        command.Parameters.AddWithValue("@UserID", thisGame.GameID);
+                        command.Parameters.AddWithValue("@GameID", thisGame.GameID);
                         command.Parameters.AddWithValue("@Player", thisGame.Player1Token);
 
                         using (SqlDataReader reader = command.ExecuteReader())
@@ -309,7 +323,7 @@ namespace Boggle
                     }
                     using (SqlCommand command = new SqlCommand("select Word, Score from Words where GameID = @GameID and Player = @Player", conn, trans))
                     {
-                        command.Parameters.AddWithValue("@UserID", thisGame.GameID);
+                        command.Parameters.AddWithValue("@GameID", thisGame.GameID);
                         command.Parameters.AddWithValue("@Player", thisGame.Player2Token);
 
                         using (SqlDataReader reader = command.ExecuteReader())
@@ -396,7 +410,7 @@ namespace Boggle
                         thisGame.TimeLeft = 0;
                     }
 
-                    using (SqlCommand command = new SqlCommand("update Games set TimeLeft = @TimeLeft, GameState = @GameState,  where GameID = @GameID", conn, trans))
+                    using (SqlCommand command = new SqlCommand("update Games set TimeLeft = @TimeLeft, GameState = @GameState WHERE GameID = @GameID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@GameState", thisGame.GameState);
                         command.Parameters.AddWithValue("@TimeLeft", thisGame.TimeLeft);

@@ -100,8 +100,7 @@ namespace Boggle
             return File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "index.html");
         }
 
-
-        public void CancelJoin(Token userToken)
+         public void CancelJoin(Token userToken)
         {
             //If UserToken is invalid, responds with status 403 (Forbidden).
             if (userToken.UserToken == null)
@@ -448,13 +447,14 @@ namespace Boggle
                     using (SqlCommand command = new SqlCommand("select UserID from Users where UserID = @UserID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", userToken);
-
+                        //check this part 
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
 
                             if (userToken == null || !reader.HasRows || timeLimit < 5 || timeLimit > 120)
                             {
                                 SetStatus(Forbidden);
+                                //check this part 
                                 trans.Commit();
                                 return null;
                             }

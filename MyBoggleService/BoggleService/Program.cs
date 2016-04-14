@@ -1,4 +1,8 @@
-﻿using CustomNetworking;
+﻿
+// Meysam Hamel && Eric Miramontes
+// CS 3500
+
+using CustomNetworking;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -58,10 +62,7 @@ namespace Boggle
 
             //Start the server
             new BoggleServer(60000);
-
-  
-
-
+            
             Console.Read();
         }
 
@@ -228,8 +229,6 @@ namespace Boggle
                     ss.BeginSend("\r\n", Ignore, null);
                     ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
 
-
-
                 }
                 //Create User
                 else if (method == "POST" && URL == "/users")
@@ -294,6 +293,7 @@ namespace Boggle
                     result = boggleService.PlayWord(gameID, wordplayed); //This is supposed to be the JSON output from the function
                     ss.BeginSend("HTTP/1.1 201 OK\n", Ignore, null);
                     ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                    //check this line as well
                     ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);
                     ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);

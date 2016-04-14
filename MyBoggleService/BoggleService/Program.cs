@@ -20,10 +20,12 @@ namespace Boggle
         }
 
         private TcpListener server;
+        private BoggleService boggleService;
 
         public WebServer()
         {
             server = new TcpListener(IPAddress.Any, 60000);
+            boggleService = new BoggleService();
             server.Start();
             server.BeginAcceptSocket(ConnectionRequested, null);
         }
@@ -32,19 +34,21 @@ namespace Boggle
         {
             Socket s = server.EndAcceptSocket(ar);
             server.BeginAcceptSocket(ConnectionRequested, null);
-            new HttpRequest(new StringSocket(s, new UTF8Encoding()));
+            new HttpRequest(boggleService, new StringSocket(s, new UTF8Encoding()));
         }
     }
 
     class HttpRequest
     {
+        BoggleService boggleService;
         private StringSocket ss;
         private int lineCount;
         private int contentLength;
         private string requestedfunction = "none";
 
-        public HttpRequest(StringSocket stringSocket)
+        public HttpRequest(BoggleService boggleService, StringSocket stringSocket)
         {
+            this.boggleService = boggleService;
             this.ss = stringSocket;
             ss.BeginReceive(LineReceived, null);
         }
@@ -139,9 +143,11 @@ namespace Boggle
                     //Not Working Right Now
                     //API Homepage Requested
                     Console.WriteLine("** Homepage Requested");
-                    ////string result = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "index.html");
-                    string result = "<HTML>Blahblah</HTML>";
 
+
+                    ////string result = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "index.html");
+                    //string result = "<HTML>Blahblah</HTML>";
+                    string result = boggleService.API().ToString();
                     ss.BeginSend("HTTP/1.1 200 OK\n", Ignore, null);
                     ss.BeginSend("Content-Type: text/html\n", Ignore, null);
                     ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);

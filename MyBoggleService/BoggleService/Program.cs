@@ -214,39 +214,39 @@ namespace Boggle
                 string result;
 
                 //Regex for /games/{GameID} - Playword
-                Regex PW = new Regex(@"^\/games\/[0-9]+$");
+                Regex PW = new Regex(@"^\/boggleservice.svc\/games\/[0-9]+$");
 
                 //Regex for /games/{GameID} - Playword
-                Regex GR = new Regex(@"^\/games\/[0-9]+(\?brief=yes)?$");
+                Regex GR = new Regex(@"^\/boggleservice.svc\/games\/[0-9]+(\?brief=yes)?$");
                 //API Homepage
                 if (method == "GET" && URL == "/")
                 {
 
                     result = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "index.html");
-                    ss.BeginSend("HTTP/1.1 200 OK\n", Ignore, null);
-                    ss.BeginSend("Content-Type: text/html\n", Ignore, null);
-                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("HTTP/1.1 200 OK\r\n", Ignore, null);
+                    ss.BeginSend("Content-Type: text/html\r\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);
                     ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
 
                 }
                 //Create User
-                else if (method == "POST" && URL == "/users")
+                else if (method == "POST" && URL == "/boggleservice.svc/users")
                 {
                     //Remember, s is the input
                     Username playeruser = JsonConvert.DeserializeObject<Username>(s);
 
                     //Display Results
                     result = boggleService.CreateUser(playeruser); //This is supposed to be the JSON output from the function
-                    ss.BeginSend("HTTP/1.1 "+ boggleService.GetStatusCode() +"\n", Ignore, null);
-                    ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("HTTP/1.1 "+ boggleService.GetStatusCode() +"\r\n", Ignore, null);
+                    ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);
                     ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
 
                 }
                 //JoinGame
-                else if (method == "POST" && URL == "/games")
+                else if (method == "POST" && URL == "/boggleservice.svc/games")
                 {
 
                     //Run the Join Game Function
@@ -256,15 +256,15 @@ namespace Boggle
                     //Display Results
 
                     result = boggleService.JoinGame(joingame); //This is supposed to be the JSON output from the function
-                    ss.BeginSend("HTTP/1.1 201 OK\n", Ignore, null);
-                    ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("HTTP/1.1 201 OK\r\n", Ignore, null);
+                    ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);
                     ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
 
                 }
                 //CancelJoin
-                else if (method == "PUT" && URL == "/games")
+                else if (method == "PUT" && URL == "/boggleservice.svc/games")
                 {
 
                     //Run the Cancel Join Function
@@ -272,9 +272,9 @@ namespace Boggle
                     boggleService.CancelJoin(canceljoin);
 
                     result = ""; //This is supposed to be the JSON output from the function
-                    ss.BeginSend("HTTP/1.1 201 OK\n", Ignore, null);
-                    ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("HTTP/1.1 201 OK\r\n", Ignore, null);
+                    ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);
                     ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
 
@@ -291,10 +291,10 @@ namespace Boggle
                     Console.WriteLine("GAME ID : " + gameID);
 
                     result = boggleService.PlayWord(gameID, wordplayed); //This is supposed to be the JSON output from the function
-                    ss.BeginSend("HTTP/1.1 201 OK\n", Ignore, null);
-                    ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                    ss.BeginSend("HTTP/1.1 201 OK\r\n", Ignore, null);
+                    ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
                     //check this line as well
-                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);
                     ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
 
@@ -305,7 +305,7 @@ namespace Boggle
                     //Check to see if brief=yes is provided
                     string brief = "no";
 
-                    var BR = new Regex(@"^\/games\/[0-9]+(\?brief=yes)$");
+                    var BR = new Regex(@"^\/boggleservice.svc\/games\/[0-9]+(\?brief=yes)$");
 
                     if (BR.IsMatch(URL))
                     {
@@ -325,9 +325,9 @@ namespace Boggle
 
 
                     result = JSONOutput; //This is supposed to be the JSON output from the function
-                    ss.BeginSend("HTTP/1.1 201 OK\n", Ignore, null);
-                    ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("HTTP/1.1 201 OK\r\n", Ignore, null);
+                    ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);
                     ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
 
@@ -335,9 +335,9 @@ namespace Boggle
                 //Nothing matched, throw an error
                 else {
                     result = "<B>Error: no method matched. Result was unchanged. Sorry bro :(</B>";
-                    ss.BeginSend("HTTP/1.1 400 BAD REQUEST\n", Ignore, null);
-                    ss.BeginSend("Content-Type: text/html\n", Ignore, null);
-                    ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                    ss.BeginSend("HTTP/1.1 400 BAD REQUEST\r\n", Ignore, null);
+                    ss.BeginSend("Content-Type: text/html\r\n", Ignore, null);
+                    ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);
                     ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
                 }

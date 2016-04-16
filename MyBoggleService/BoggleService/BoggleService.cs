@@ -126,6 +126,7 @@ namespace Boggle
                             if (!reader.HasRows)
                             {
                                 SetStatus(Forbidden);
+                                reader.Close();
                                 trans.Commit();
                                 return;
                             }
@@ -143,6 +144,7 @@ namespace Boggle
                             if ((string)reader["Player1"] != userToken.UserToken)
                             {
                                 SetStatus(Forbidden);
+                                reader.Close();
                                 trans.Commit();
                                 return;
                             }
@@ -454,7 +456,7 @@ namespace Boggle
                             if (userToken == null || !reader.HasRows || timeLimit < 5 || timeLimit > 120)
                             {
                                 SetStatus(Forbidden);
-                                //check this part 
+                                reader.Close();
                                 trans.Commit();
                                 return null;
                             }

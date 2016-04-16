@@ -219,7 +219,7 @@ namespace Boggle
                 //Regex for /games/{GameID} - Playword
                 Regex GR = new Regex(@"^\/boggleservice.svc\/games\/[0-9]+(\?brief=yes)?$");
                 //API Homepage
-                if (method == "GET" && URL == "/")
+                if (method == "GET" && URL == "/boggleservice.svc")
                 {
 
                     result = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "index.html");
@@ -234,10 +234,29 @@ namespace Boggle
                 else if (method == "POST" && URL == "/boggleservice.svc/users")
                 {
                     //Remember, s is the input
-                    Username playeruser = JsonConvert.DeserializeObject<Username>(s);
+
+                    result = "";
+
+                    try
+                    {
+
+                        Username playeruser = JsonConvert.DeserializeObject<Username>(s);
+                        result = boggleService.CreateUser(playeruser); //This is supposed to be the JSON output from the function
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+
+                    if (result == null)
+                    {
+                        result = "";
+                    }
+
+                    
 
                     //Display Results
-                    result = boggleService.CreateUser(playeruser); //This is supposed to be the JSON output from the function
                     ss.BeginSend("HTTP/1.1 "+ boggleService.GetStatusCode() +"\r\n", Ignore, null);
                     ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
                     ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
@@ -250,13 +269,27 @@ namespace Boggle
                 {
 
                     //Run the Join Game Function
-    
-                    JoinRequest joingame = JsonConvert.DeserializeObject<JoinRequest>(s);
 
+                    result = "";
+
+                    try {
+
+                        JoinRequest joingame = JsonConvert.DeserializeObject<JoinRequest>(s);
+                        result = boggleService.JoinGame(joingame); //This is supposed to be the JSON output from the function
+
+                    } catch(Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+
+                    if(result == null)
+                    {
+                        result = "";
+                    }
                     //Display Results
 
-                    result = boggleService.JoinGame(joingame); //This is supposed to be the JSON output from the function
-                    ss.BeginSend("HTTP/1.1 201 OK\r\n", Ignore, null);
+
+                    ss.BeginSend("HTTP/1.1 " + boggleService.GetStatusCode() + "\r\n", Ignore, null);
                     ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
                     ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);
@@ -272,7 +305,7 @@ namespace Boggle
                     boggleService.CancelJoin(canceljoin);
 
                     result = ""; //This is supposed to be the JSON output from the function
-                    ss.BeginSend("HTTP/1.1 201 OK\r\n", Ignore, null);
+                    ss.BeginSend("HTTP/1.1 " + boggleService.GetStatusCode() + "\r\n", Ignore, null);
                     ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
                     ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);
@@ -283,15 +316,34 @@ namespace Boggle
                 else if (method == "PUT" && PW.IsMatch(URL))
                 {
 
-                    //Run the Play Word Function
-                    WordPlayed wordplayed = JsonConvert.DeserializeObject<WordPlayed>(s);
-                    Regex gameIDregex = new Regex(@"([0-9]+)");
-                    Match gameIDmatch = gameIDregex.Match(URL);
-                    string gameID = gameIDmatch.Value;
-                    Console.WriteLine("GAME ID : " + gameID);
+                    result = "";
 
-                    result = boggleService.PlayWord(gameID, wordplayed); //This is supposed to be the JSON output from the function
-                    ss.BeginSend("HTTP/1.1 201 OK\r\n", Ignore, null);
+                    try
+                    {
+
+                        //Run the Play Word Function
+                        WordPlayed wordplayed = JsonConvert.DeserializeObject<WordPlayed>(s);
+                        Regex gameIDregex = new Regex(@"([0-9]+)");
+                        Match gameIDmatch = gameIDregex.Match(URL);
+                        string gameID = gameIDmatch.Value;
+                        Console.WriteLine("GAME ID : " + gameID);
+
+                        result = boggleService.PlayWord(gameID, wordplayed); //This is supposed to be the JSON output from the function
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+
+                    if (result == null)
+                    {
+                        result = "";
+                    }
+                    //
+               
+
+                    ss.BeginSend("HTTP/1.1 " + boggleService.GetStatusCode() + "\r\n", Ignore, null);
                     ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
                     //check this line as well
                     ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
@@ -368,7 +420,7 @@ namespace Boggle
                 //string result = "<font size='50'>One Small Step for a Man</font><BR><BR>I received input as: " +s;
 
 
-                ss.BeginSend("HTTP/1.1 200 OK\n", Ignore, null);
+                ss.BeginSend("HTTP/1.1 " + boggleService.GetStatusCode() + "\r\n", Ignore, null);
                 ss.BeginSend("Content-Type: text/html\n", Ignore, null);
                 ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
                 ss.BeginSend("\r\n", Ignore, null);

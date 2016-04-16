@@ -80,10 +80,10 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\examples\SimpleWebServer\Net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\..\..\..\Downloads\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="StringSocket">
-      <HintPath>..\..\..\examples\SimpleWebServer\StringSocket.dll</HintPath>
+      <HintPath>..\..\..\..\..\Downloads\StringSocket.dll</HintPath>
     </Reference>
     <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
       <HintPath>..\packages\Swashbuckle.Core.5.0.0\lib\net40\Swashbuckle.Core.dll</HintPath>

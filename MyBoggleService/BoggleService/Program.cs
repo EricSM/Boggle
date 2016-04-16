@@ -216,10 +216,10 @@ namespace Boggle
                 //Regex for /games/{GameID} - Playword
                 Regex PW = new Regex(@"^\/boggleservice.svc\/games\/[0-9]+$");
 
-                //Regex for /games/{GameID} - Playword
+                //Regex for /games/{GameID} - Playword 
                 Regex GR = new Regex(@"^\/boggleservice.svc\/games\/[0-9]+(\?brief=yes)?$");
                 //API Homepage
-                if (method == "GET" && URL == "/boggleservice.svc")
+                if (method == "GET" && URL == "/")
                 {
 
                     result = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "index.html");

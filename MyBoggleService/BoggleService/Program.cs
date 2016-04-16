@@ -377,7 +377,7 @@ namespace Boggle
 
 
                     result = JSONOutput; //This is supposed to be the JSON output from the function
-                    ss.BeginSend("HTTP/1.1 201 OK\r\n", Ignore, null);
+                    ss.BeginSend("HTTP/1.1 " + boggleService.GetStatusCode() + "\r\n", Ignore, null);
                     ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
                     ss.BeginSend("Content-Length: " + result.Length + "\r\n", Ignore, null);
                     ss.BeginSend("\r\n", Ignore, null);

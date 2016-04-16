@@ -651,6 +651,14 @@ namespace Boggle
                                     gameState = (string)reader["GameState"];
                                 }
 
+                                // Otherwise, if the game state is anything other than "active", responds with response code 409(Conflict).
+                                if (gameState != "active")
+                                {
+                                    Debug.WriteLine(gameState);
+                                    SetStatus(Conflict);
+                                    return null;
+                                }
+
                                 if ((string)reader["Player1"] == userToken || (string)reader["Player2"] == userToken)
                                 {
                                     //Player 1 has only joined, when player 2 joins is only when we get a board
@@ -688,13 +696,7 @@ namespace Boggle
                     // *********** JUMPER 1 
 
 
-                    // Otherwise, if the game state is anything other than "active", responds with response code 409(Conflict).
-                    if (gameState != "active")
-                    {
-                        Debug.WriteLine(gameState);
-                        SetStatus(Conflict);
-                        return null;
-                    }
+                    
 
                     // Otherwise, records the trimmed Word as being played by UserToken in the game identified by GameID.
                     // Returns the score for Word in the context of the game(e.g. if Word has been played before the score is zero). 

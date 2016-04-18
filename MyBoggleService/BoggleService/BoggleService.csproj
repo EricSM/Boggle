@@ -142,6 +142,8 @@
     <Content Include="dictionary.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Newtonsoft.Json.dll" />
+    <Content Include="StringSocket.dll" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

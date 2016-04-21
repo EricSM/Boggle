@@ -129,6 +129,7 @@
     <Content Include="index.html" />
     <Content Include="dictionary.txt" />
     <Content Include="BoggleService.svc" />
+    <Content Include="PS9Regrade.txt" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

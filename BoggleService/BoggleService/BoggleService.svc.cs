@@ -36,8 +36,9 @@ namespace Boggle
             return File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "index.html");
         }
 
-        public void CancelJoin(string userToken)
+        public void CancelJoin(Token token)
         {
+            var userToken = token.UserToken;
             //If UserToken is invalid or is not a player in the pending game, responds with status 403 (Forbidden).
             if (userToken == null || !users.ContainsKey(userToken) || (games[gameID].Player1Token != userToken && games[gameID].Player2Token != userToken))
             {
@@ -55,8 +56,9 @@ namespace Boggle
 
         }
 
-        public string CreateUser(string nickname)
+        public Token CreateUser(User name)
         {
+            string nickname = name.Nickname;
             // Check for validity
             if (nickname == null || nickname.Trim().Length == 0)
             {
@@ -78,119 +80,124 @@ namespace Boggle
                 }
 
                 SetStatus(Created);
-                return UserToken;
+                Token t = new Token() { UserToken = UserToken };
+                return t;
             }
         }
 
-        public GameStatus GetGameStatus(int gameID, string brief)
+        public GameStatus GetGameStatus(string ID, string brief)
         {
-            // Checks if gameID is valid
-            if (!games.ContainsKey(gameID))
+            lock (sync)
             {
-                SetStatus(Forbidden);
-                return null;
-            }
-            // else return status and update game
-            else
-            {
-                Game thisGame = games[gameID];
-                GameStatus status = new GameStatus();
-
-                // if game is pending
-                if (thisGame.GameState == "pending")
+                int gameID;
+                // Checks if gameID is valid
+                if (!int.TryParse(ID, out gameID) || !games.ContainsKey(gameID))
                 {
+                    SetStatus(Forbidden);
+                    return null;
+                }
+                // else return status and update game
+                else
+                {
+                    Game thisGame = games[gameID];
+                    GameStatus status = new GameStatus();
+
+                    // if game is pending
+                    if (thisGame.GameState == "pending")
+                    {
+                        SetStatus(OK);
+                        return new GameStatus() { GameState = "pending" };
+                    }
+                    // if game is active or completed and "Brief=yes" was a parameter
+                    if ((thisGame.GameState == "active" || thisGame.GameState == "complete") && brief == "yes")
+                    {
+                        status = new GameStatus()
+                        {
+                            GameState = thisGame.GameState,
+                            TimeLeft = thisGame.TimeLeft,
+                            Player1 = new Player()
+                            {
+                                Score = thisGame.Player1Score
+                            },
+                            Player2 = new Player()
+                            {
+                                Score = thisGame.Player2Score
+                            }
+                        };
+                    }
+                    // if game is active and "Brief=yes" was not a parameter
+                    else if (thisGame.GameState == "active" && brief != "yes")
+                    {
+                        status = new GameStatus()
+                        {
+                            GameState = thisGame.GameState,
+                            Board = thisGame.GameBoard,
+                            TimeLimit = thisGame.TimeLimit,
+                            TimeLeft = thisGame.TimeLeft,
+                            Player1 = new Player()
+                            {
+                                Nickname = users[thisGame.Player1Token].Nickname,
+                                Score = thisGame.Player1Score
+                            },
+                            Player2 = new Player()
+                            {
+                                Nickname = users[thisGame.Player2Token].Nickname,
+                                Score = thisGame.Player2Score
+                            }
+                        };
+                    }
+                    // if game is complete and user did not specify brief
+                    else if (thisGame.GameState == "completed" && brief != "yes")
+                    {
+                        var Player1Scores = new HashSet<WordScore>();
+                        foreach (KeyValuePair<string, int> kv in thisGame.Player1WordScores)
+                        {
+                            Player1Scores.Add(new WordScore() { Word = kv.Key, Score = kv.Value });
+                        }
+
+                        var Player2Scores = new HashSet<WordScore>();
+                        foreach (KeyValuePair<string, int> kv in thisGame.Player2WordScores)
+                        {
+                            Player2Scores.Add(new WordScore() { Word = kv.Key, Score = kv.Value });
+                        }
+
+                        status = new GameStatus()
+                        {
+                            GameState = thisGame.GameState,
+                            Board = thisGame.GameBoard,
+                            TimeLimit = thisGame.TimeLimit,
+                            TimeLeft = thisGame.TimeLeft,
+                            Player1 = new Player()
+                            {
+                                Nickname = users[thisGame.Player1Token].Nickname,
+                                Score = thisGame.Player1Score,
+                                WordsPlayed = Player1Scores
+                            },
+                            Player2 = new Player()
+                            {
+                                Nickname = users[thisGame.Player2Token].Nickname,
+                                Score = thisGame.Player2Score,
+                                WordsPlayed = Player2Scores
+                            }
+                        };
+                    }
+
+                    // update game
+                    games[gameID].TimeLeft -= (DateTime.Now - thisGame.StartTime).Seconds;
+
+                    if (games[gameID].TimeLeft <= 0)
+                    {
+                        games[gameID].GameState = "complete";
+                        games[gameID].TimeLeft = 0;
+                    }
+
                     SetStatus(OK);
-                    return new GameStatus() { GameState = "pending" };
+                    return status;
                 }
-                // if game is active or completed and "Brief=yes" was a parameter
-                if ((thisGame.GameState == "active" || thisGame.GameState == "complete") && brief == "yes")
-                {
-                    status = new GameStatus()
-                    {
-                        GameState = thisGame.GameState,
-                        TimeLeft = thisGame.TimeLeft,
-                        Player1 = new Player()
-                        {
-                            Score = thisGame.Player1Score
-                        },
-                        Player2 = new Player()
-                        {
-                            Score = thisGame.Player2Score
-                        }
-                    };
-                }
-                // if game is active and "Brief=yes" was not a parameter
-                else if (thisGame.GameState == "active" && brief != "yes")
-                {
-                    status = new GameStatus()
-                    {
-                        GameState = thisGame.GameState,
-                        Board = thisGame.GameBoard,
-                        TimeLimit = thisGame.TimeLimit,
-                        TimeLeft = thisGame.TimeLeft,
-                        Player1 = new Player()
-                        {
-                            Nickname = users[thisGame.Player1Token].Nickname,
-                            Score = thisGame.Player1Score
-                        },
-                        Player2 = new Player()
-                        {
-                            Nickname = users[thisGame.Player2Token].Nickname,
-                            Score = thisGame.Player2Score
-                        }
-                    };
-                }
-                // if game is complete and user did not specify brief
-                else if (thisGame.GameState == "completed" && brief != "yes")
-                {
-                    var Player1Scores = new HashSet<WordScore>();
-                    foreach (KeyValuePair<string, int> kv in thisGame.Player1WordScores)
-                    {
-                        Player1Scores.Add(new WordScore() { Word = kv.Key, Score = kv.Value });
-                    }
-
-                    var Player2Scores = new HashSet<WordScore>();
-                    foreach (KeyValuePair<string, int> kv in thisGame.Player2WordScores)
-                    {
-                        Player2Scores.Add(new WordScore() { Word = kv.Key, Score = kv.Value });
-                    }
-
-                    status = new GameStatus()
-                    {
-                        GameState = thisGame.GameState,
-                        Board = thisGame.GameBoard,
-                        TimeLimit = thisGame.TimeLimit,
-                        TimeLeft = thisGame.TimeLeft,
-                        Player1 = new Player()
-                        {
-                            Nickname = users[thisGame.Player1Token].Nickname,
-                            Score = thisGame.Player1Score,
-                            WordsPlayed = Player1Scores
-                        },
-                        Player2 = new Player()
-                        {
-                            Nickname = users[thisGame.Player2Token].Nickname,
-                            Score = thisGame.Player2Score,
-                            WordsPlayed = Player2Scores
-                        }
-                    };
-                }
-
-                // update game
-                games[gameID].TimeLeft -= (DateTime.Now - thisGame.StartTime).Seconds;
-
-                if (games[gameID].TimeLeft <= 0)
-                {
-                    games[gameID].GameState = "complete";
-                    games[gameID].TimeLeft = 0;
-                }
-
-                SetStatus(OK);
-                return status;
             }
         }
 
-        public string JoinGame(JoinRequest joinRequest)
+        public GID JoinGame(JoinRequest joinRequest)
         {
             string userToken = joinRequest.UserToken;
             int timeLimit = joinRequest.TimeLimit;
@@ -199,17 +206,19 @@ namespace Boggle
             if (userToken == null || !users.ContainsKey(userToken) || timeLimit < 5 || timeLimit > 120)
             {
                 SetStatus(Forbidden);
+                return null;
             }
             // Check if user is already in pending game.
             else if (games[gameID].Player1Token == userToken || games[gameID].Player2Token == userToken)
             {
                 SetStatus(Conflict);
+                return null;
             }
 
             // If player 1 is taken, user is player 2
             if (games[gameID].Player1Token != null && games[gameID].Player2Token == null)
             {
-                string GameID = gameID.ToString();
+                GID GameID = new GID() { GameID = gameID.ToString() };
 
                 lock (sync)
                 {
@@ -221,7 +230,7 @@ namespace Boggle
                 return GameID;
             }
             // if player 2 is taken, user is player 1
-            else if (games[gameID].Player2Token != null || games[gameID].Player1Token == null)
+            /*else if (games[gameID].Player2Token != null || games[gameID].Player1Token == null)
             {
                 string GameID = gameID.ToString();
 
@@ -233,11 +242,11 @@ namespace Boggle
 
                 SetStatus(Created);
                 return GameID;
-            }
+            }*/
             // if user is first to enter pending game
             else
             {
-                string GameID = gameID.ToString();
+                GID GameID = new GID() { GameID = gameID.ToString() };
 
                 lock (sync)
                 {

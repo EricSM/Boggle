@@ -6,6 +6,22 @@ using System.Web;
 
 namespace Boggle
 {
+    public class User
+    {
+        public string Nickname { get; set; }
+    }
+    public class Token
+    {
+        public string UserToken { get; set; }
+    }
+    public class GID
+    {
+        public string GameID { get; set; }
+    }
+    public class PlayWordScore
+    {
+        public string Score { get; set; }
+    }
     public class UserInfo
     {
         public string Nickname { get; set; }

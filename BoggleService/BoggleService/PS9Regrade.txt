@@ -1,0 +1,19 @@
+﻿Meysam Hamel & Eric Miramontes
+
+Fix 1:
+a) Most of the tests reported internal server errors.  The boggle server interface was implemented wrong.  We didn't know enough about REST interfaces
+and we relied too much on the Todolist example, which did not use json.
+
+The simple fix was to put ALL the data, whether inputted or outputted to the server, inside wrapper classes.  This changed very little actual core code.
+The only code that was added from this was to retrieve data in wrapper classes at the beginning of the methods CreateUser, JoinGame, and CancelJoin.
+
+The other problem was that in GetGameStatus, we expected the WCF to parse the gameID int from the url.  It can't do that so we changed it so it retrieves 
+a string from the url, and then parse it into an int to retrieve the gameID. Again, this changed very little core code; all that was added was to check if
+the gameId retrieved from the url can be parsed into an int.
+
+b) Sometimes joingame would return with status "Accepted" instead of "Created". This was caused by checking if player 2 is occupied in pending game.  
+This never happens so that code was simply commented out.
+
+c) Forgot to put lock in GetGameStatus where game time is updated.
+
+30 more tests now passed in grader: JoinGame 1-10; MakeUser 1-4; TestCancelGame 1-6; and TestStatus 1-10, 14

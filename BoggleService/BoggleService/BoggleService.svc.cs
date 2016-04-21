@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.ServiceModel.Web;
@@ -13,6 +14,7 @@ namespace Boggle
         private readonly static Dictionary<String, UserInfo> users = new Dictionary<String, UserInfo>();
         private readonly static Dictionary<int, Game> games = new Dictionary<int, Game> { { gameID, new Game()} };
         private static readonly object sync = new object();
+        private static HashSet<string> dictionary = LoadDictionary(AppDomain.CurrentDomain.BaseDirectory + @"dictionary.txt");
 
 
         /// <summary>
@@ -23,6 +25,32 @@ namespace Boggle
         private static void SetStatus(HttpStatusCode status)
         {
             WebOperationContext.Current.OutgoingResponse.StatusCode = status;
+        }
+
+        //use load dictioary to read file name 
+        private static HashSet<string> LoadDictionary(string filename)
+        {
+            HashSet<string> set = new HashSet<string>();
+
+            try
+            {
+                using (StreamReader reader = new StreamReader(filename))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        set.Add(line);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Console.Error.WriteLine("Error reading dictionary file.");
+                Debug.WriteLine("I CAn'T READD!!!!");
+                // Environment.Exit(1);
+            }
+
+            return set;
         }
 
         /// <summary>
@@ -302,22 +330,27 @@ namespace Boggle
                 // Responds with status 200(OK).Note: The word is not case sensitive.
                 BoggleBoard board = new BoggleBoard(games[gameID].GameBoard);
                 int score = 0;
+                Debug.WriteLine(board.CanBeFormed(Word));
+Debug.WriteLine(dictionary.Contains(Word));
+                    if (!board.CanBeFormed(Word) || !dictionary.Contains(Word))
+                    {
+                        score = -1;
+                    }else {
 
-                // TODO Check if word exists in the dictionary
-                if (board.CanBeFormed(Word))
-                {
-                    
-                    if (Word.Length > 2) score++;
-                    if (Word.Length > 4) score++;
-                    if (Word.Length > 5) score++;
-                    if (Word.Length > 6) score += 2;
-                    if (Word.Length > 7) score += 6;
+                        if (Word.Length > 2) score++;
+                        if (Word.Length > 4) score++;
+                        if (Word.Length > 5) score++;
+                        if (Word.Length > 6) score += 2;
+                        if (Word.Length > 7) score += 6;
+                    }
+
+                    Debug.WriteLine(score);
 
                     lock (sync)
                     {
                         if (games[gameID].Player1Token == UserToken)
                         {
-                            if (games[gameID].Player2WordScores.ContainsKey(Word))
+                        if (games[gameID].Player2WordScores.ContainsKey(Word))
                             {
                                 games[gameID].Player2Score -= games[gameID].Player2WordScores[Word];
                                 games[gameID].Player2WordScores[Word] = score = 0;
@@ -330,11 +363,12 @@ namespace Boggle
                             else
                             {
                                 games[gameID].Player1WordScores.Add(Word, score);
-                            }
+                            games[gameID].Player1Score += score;
+                        }
                         }
                         else if (games[gameID].Player2Token == UserToken)
                         {
-                            if (games[gameID].Player1WordScores.ContainsKey(Word))
+                        if (games[gameID].Player1WordScores.ContainsKey(Word))
                             {
                                 games[gameID].Player1Score -= games[gameID].Player1WordScores[Word];
                                 games[gameID].Player1WordScores[Word] = score = 0;
@@ -347,10 +381,11 @@ namespace Boggle
                             else
                             {
                                 games[gameID].Player2WordScores.Add(Word, score);
-                            }
+                            games[gameID].Player2Score += score;
+                        }
                         }
                     }                                        
-                }
+               
 
                 SetStatus(OK);
                 return new PlayWordScore() { Score = score.ToString() };

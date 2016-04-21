@@ -269,18 +269,21 @@ namespace Boggle
             games[gameID].TimeLimit = timeLeft;
             games[gameID].TimeLeft = timeLeft;
             games[gameID].StartTime = DateTime.Now;
+            games[gameID].Player1WordScores = new Dictionary<string, int>();
+            games[gameID].Player2WordScores = new Dictionary<string, int>();
             gameID++;
             games.Add(gameID, new Game());
         }
 
-        public string PlayWord(int gameID, WordPlayed wordPlayed)
+        public PlayWordScore PlayWord(string ID, WordPlayed wordPlayed)
         {
             string UserToken = wordPlayed.UserToken;
             string Word = wordPlayed.Word.ToUpper();
+            int gameID;
 
             // If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid,
             // or if UserToken is not a player in the game identified by GameID, responds with response code 403 (Forbidden).
-            if (Word == null || Word.Trim() == string.Empty || !users.ContainsKey(UserToken) ||
+            if (!int.TryParse(ID, out gameID) || Word == null || Word.Trim() == string.Empty || !users.ContainsKey(UserToken) ||
                 (games[gameID].Player1Token != UserToken && games[gameID].Player2Token != UserToken))
             {
                 SetStatus(Forbidden);
@@ -350,7 +353,7 @@ namespace Boggle
                 }
 
                 SetStatus(OK);
-                return score.ToString();
+                return new PlayWordScore() { Score = score.ToString() };
             }
         }
     }

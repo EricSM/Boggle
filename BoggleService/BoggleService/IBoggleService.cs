@@ -17,8 +17,8 @@ namespace Boggle
         [WebInvoke(Method = "PUT", UriTemplate = "/games")]
         void CancelJoin(Token userToken);
 
-        //[WebInvoke(Method = "PUT", UriTemplate = "/games/{gameID}")]
-        //PlayWordScore PlayWord(int gameID, WordPlayed wordPlayed);
+        [WebInvoke(Method = "PUT", UriTemplate = "/games/{gameID}")]
+        PlayWordScore PlayWord(string gameID, WordPlayed wordPlayed);
 
         [WebGet(UriTemplate = "/games/{gameID}?Brief={brief}")]
         GameStatus GetGameStatus(string gameID, string brief);

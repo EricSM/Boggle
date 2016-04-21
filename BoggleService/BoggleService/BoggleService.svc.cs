@@ -130,6 +130,22 @@ namespace Boggle
                     Game thisGame = games[gameID];
                     GameStatus status = new GameStatus();
 
+                    Debug.WriteLine(thisGame.GameState);
+                    Debug.WriteLine(brief);
+
+
+                    // update game
+                    games[gameID].TimeLeft -= (DateTime.Now - thisGame.StartTime).Seconds;
+                    Debug.WriteLine((DateTime.Now - thisGame.StartTime).Seconds);
+                    Debug.WriteLine(games[gameID].TimeLeft);
+                    if (games[gameID].TimeLeft <= 0)
+                    {
+                        games[gameID].GameState = "completed";
+                        games[gameID].TimeLeft = 0;
+                        Debug.WriteLine("TIME IS NOW 0!");
+                        Debug.WriteLine(games[gameID].TimeLeft);
+                    }
+
                     // if game is pending
                     if (thisGame.GameState == "pending")
                     {
@@ -137,8 +153,9 @@ namespace Boggle
                         return new GameStatus() { GameState = "pending" };
                     }
                     // if game is active or completed and "Brief=yes" was a parameter
-                    if ((thisGame.GameState == "active" || thisGame.GameState == "complete") && brief == "yes")
+                    if ((thisGame.GameState == "active" || thisGame.GameState == "completed") && brief == "yes")
                     {
+                        Debug.WriteLine(thisGame.TimeLeft);
                         status = new GameStatus()
                         {
                             GameState = thisGame.GameState,
@@ -156,6 +173,20 @@ namespace Boggle
                     // if game is active and "Brief=yes" was not a parameter
                     else if (thisGame.GameState == "active" && brief != "yes")
                     {
+                        Debug.WriteLine(thisGame.TimeLeft+"******************");
+                        string player2nick = "";
+                        try
+                        {
+                            if (users[thisGame.Player2Token].Nickname != null)
+                            {
+                                player2nick = users[thisGame.Player2Token].Nickname;
+                            }
+                        }
+                        catch
+                        {
+
+                        }
+
                         status = new GameStatus()
                         {
                             GameState = thisGame.GameState,
@@ -169,7 +200,7 @@ namespace Boggle
                             },
                             Player2 = new Player()
                             {
-                                Nickname = users[thisGame.Player2Token].Nickname,
+                                Nickname = player2nick,
                                 Score = thisGame.Player2Score
                             }
                         };
@@ -177,18 +208,40 @@ namespace Boggle
                     // if game is complete and user did not specify brief
                     else if (thisGame.GameState == "completed" && brief != "yes")
                     {
+
+                        string player2nick = "";
+                        try { 
+                        if (users[thisGame.Player2Token].Nickname != null)
+                        {
+                            player2nick = users[thisGame.Player2Token].Nickname;
+                        }
+                        }
+                        catch
+                        {
+
+                        }
+
+
                         var Player1Scores = new HashSet<WordScore>();
-                        foreach (KeyValuePair<string, int> kv in thisGame.Player1WordScores)
-                        {
-                            Player1Scores.Add(new WordScore() { Word = kv.Key, Score = kv.Value });
-                        }
 
+                        if (thisGame.Player1WordScores != null)
+                        {
+                            foreach (KeyValuePair<string, int> kv in thisGame.Player1WordScores)
+                            {
+                                Player1Scores.Add(new WordScore() { Word = kv.Key, Score = kv.Value });
+                            }
+
+                        }
                         var Player2Scores = new HashSet<WordScore>();
-                        foreach (KeyValuePair<string, int> kv in thisGame.Player2WordScores)
-                        {
-                            Player2Scores.Add(new WordScore() { Word = kv.Key, Score = kv.Value });
-                        }
 
+                        if (thisGame.Player2WordScores != null)
+                        {
+                            foreach (KeyValuePair<string, int> kv in thisGame.Player2WordScores)
+                            {
+                                Player2Scores.Add(new WordScore() { Word = kv.Key, Score = kv.Value });
+                            }
+                        }
+                        Debug.WriteLine(thisGame.TimeLeft);
                         status = new GameStatus()
                         {
                             GameState = thisGame.GameState,
@@ -203,22 +256,15 @@ namespace Boggle
                             },
                             Player2 = new Player()
                             {
-                                Nickname = users[thisGame.Player2Token].Nickname,
+                                Nickname = player2nick,
                                 Score = thisGame.Player2Score,
                                 WordsPlayed = Player2Scores
                             }
                         };
                     }
 
-                    // update game
-                    games[gameID].TimeLeft -= (DateTime.Now - thisGame.StartTime).Seconds;
-
-                    if (games[gameID].TimeLeft <= 0)
-                    {
-                        games[gameID].GameState = "complete";
-                        games[gameID].TimeLeft = 0;
-                    }
-
+                 
+                    Debug.WriteLine(status.TimeLeft);
                     SetStatus(OK);
                     return status;
                 }
@@ -292,7 +338,7 @@ namespace Boggle
         {
             // Starts a new active game
             int timeLeft = (games[gameID].TimeLimit + timeLimit) / 2;
-            games[gameID].GameState = "active";
+            games[gameID].GameState = "active"; //should be pending
             games[gameID].GameBoard = new BoggleBoard().ToString();
             games[gameID].TimeLimit = timeLeft;
             games[gameID].TimeLeft = timeLeft;

@@ -1,0 +1,13 @@
+﻿Meysam Hamel & Eric Miramontes
+
+Fix:
+Most of the tests reported internal server errors.  The boggle server interface was implemented wrong.  We didn't know enough about the REST interface
+and we relied too much on the Todolist example, which did not use json.
+
+The simple fix was to put ALL the data, whether inputted or outputted to the server, inside wrapper classes.  This changed very little actual core code
+like in ps9.
+
+Other minor sources of bugs include: minor sql syntax errors, not checking for dbnulls, not closing readers before commiting database transactions, 
+and other miscellaneous typos.
+
+46/61 tests now pass in grader.

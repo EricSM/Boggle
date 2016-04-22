@@ -646,7 +646,7 @@ namespace Boggle
                                         //Board is null because only player 1 has joined
                                         //Return error that it's pending ********* Check to see if this is what we should give
 
-                                        SetStatus(OK);
+                                        SetStatus(Conflict);
                                         return null;
                                     }
                                     else

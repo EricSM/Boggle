@@ -124,6 +124,7 @@ namespace Boggle
                             if (!reader.HasRows)
                             {
                                 SetStatus(Forbidden);
+                                reader.Close();
                                 trans.Commit();
                                 return;
                             }
@@ -131,16 +132,17 @@ namespace Boggle
                     }
 
                     // Check if UserToken is not a player in the pending game.
-                    using (SqlCommand command = new SqlCommand("select Player1 from Games where GameID = @GameID", conn, trans))
+                    using (SqlCommand command = new SqlCommand("select Player1, GameState from Games where GameID = @GameID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@GameID", pendingGameID);
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             reader.Read();
 
-                            if ((string)reader["Player1"] != userToken.UserToken)
+                            if ((string)reader["Player1"] != userToken.UserToken || (string)reader["GameState"] != "pending")
                             {
                                 SetStatus(Forbidden);
+                                reader.Close();
                                 trans.Commit();
                                 return;
                             }
@@ -160,7 +162,7 @@ namespace Boggle
             }
         }
         // create user 
-        public string CreateUser(Username nickname)
+        public Token CreateUser(Username nickname)
         {
             // Check for validity
             if (nickname.Nickname == null || nickname.Nickname.Trim().Length == 0)
@@ -198,18 +200,15 @@ namespace Boggle
 
                         trans.Commit();
 
-                        dynamic JSONOutput = new ExpandoObject();
-                        JSONOutput.UserToken = UserToken;
-                        var outputcontent = JsonConvert.SerializeObject(JSONOutput);
-
-                        return outputcontent;
+                        
+                        return new Token() { UserToken = UserToken };
                     }
                 }
             }
 
         }
         //Iformation about the game named by GameID
-        public GameStatus GetGameStatus(int gameID, string brief)
+        public GameStatus GetGameStatus(string gameID, string brief)
         {
             Game thisGame;
             string Player1, Player2;
@@ -414,7 +413,7 @@ namespace Boggle
         }
 
         // TODO keeps creating pending games
-        public string JoinGame(JoinRequest joinRequest)
+        public GID JoinGame(JoinRequest joinRequest)
         {
             string player1 = null;
             string player2 = null;
@@ -441,6 +440,7 @@ namespace Boggle
                             if (userToken == null || !reader.HasRows || timeLimit < 5 || timeLimit > 120)
                             {
                                 SetStatus(Forbidden);
+                                reader.Close();
                                 trans.Commit();
                                 return null;
                             }
@@ -472,6 +472,7 @@ namespace Boggle
                                 if (player1 == userToken || player2 == userToken)
                                 {
                                     SetStatus(Conflict);
+                                    reader.Close();
                                     trans.Commit();
                                     return null;
                                 }
@@ -522,11 +523,9 @@ namespace Boggle
                             trans.Commit();
 
 
-                            dynamic JSONOutput = new ExpandoObject();
-                            JSONOutput.GameID = pendingGameID.ToString();
-                            var outputcontent = JsonConvert.SerializeObject(JSONOutput);
+                            
 
-                            return outputcontent;
+                            return new GID() { GameID = pendingGameID.ToString() };
                         }
                     }
 
@@ -550,18 +549,16 @@ namespace Boggle
                             trans.Commit();
 
 
-                            dynamic JSONOutput = new ExpandoObject();
-                            JSONOutput.GameID = pendingGameID.ToString();
-                            var outputcontent = JsonConvert.SerializeObject(JSONOutput);
+                            
 
-                            return outputcontent;
+                            return new GID() { GameID = pendingGameID.ToString() };
                         }
                     }
                 }
             }
         }
 
-        public string PlayWord(string gameIDString, WordPlayed wordPlayed)
+        public PlayWordScore PlayWord(string gameIDString, WordPlayed wordPlayed)
         {
 
             int gameID = int.Parse(gameIDString);

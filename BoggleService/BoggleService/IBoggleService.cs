@@ -9,18 +9,18 @@ namespace Boggle
     public interface IBoggleService
     {
         [WebInvoke(Method = "POST", UriTemplate = "/users")]
-        string CreateUser(Username nickname);
-        
+        Token CreateUser(Username nickname);
+
         [WebInvoke(Method = "POST", UriTemplate = "/games")]
-        string JoinGame(JoinRequest joinRequest);
-        
+        GID JoinGame(JoinRequest joinRequest);
+
         [WebInvoke(Method = "PUT", UriTemplate = "/games")]
         void CancelJoin(Token userToken);
 
-        [WebInvoke(Method = "PUT", UriTemplate = "/games/{gameID}")]
-        string PlayWord(string gameID, WordPlayed wordPlayed);
-        /*
-        [WebGet(UriTemplate = "/games/{gameID}?Brief={brief}")]
-        GameStatus GetGameStatus(int gameID, string brief);*/
+        //[WebInvoke(Method = "PUT", UriTemplate = "/games/{gameID}")]
+        //PlayWordScore PlayWord(string gameID, WordPlayed wordPlayed);
+
+        //[WebGet(UriTemplate = "/games/{gameID}?Brief={brief}")]
+        //GameStatus GetGameStatus(string gameID, string brief);
     }
 }

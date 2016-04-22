@@ -51,6 +51,14 @@ namespace Boggle
     {
         public string UserToken { get; set; }
     }
+    public class GID
+    {
+        public string GameID { get; set; }
+    }
+    public class PlayWordScore
+    {
+        public string Score { get; set; }
+    }
 
     /// <summary>
     /// Data sent through a join request.

@@ -9,5 +9,6 @@ like in ps9.
 
 Other minor sources of bugs include: minor sql syntax errors, not checking for dbnulls, not closing readers before commiting database transactions, 
 and other miscellaneous typos.
+Fixed Timer
 
-46/61 tests now pass in grader.
+59/61 tests now pass in grader.
